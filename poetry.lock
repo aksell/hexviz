@@ -172,6 +172,38 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "boto3"
+version = "1.26.95"
+description = "The AWS SDK for Python"
+category = "main"
+optional = false
+python-versions = ">= 3.7"
+
+[package.dependencies]
+botocore = ">=1.29.95,<1.30.0"
+jmespath = ">=0.7.1,<2.0.0"
+s3transfer = ">=0.6.0,<0.7.0"
+
+[package.extras]
+crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
+
+[[package]]
+name = "botocore"
+version = "1.29.95"
+description = "Low-level, data-driven core of boto 3."
+category = "main"
+optional = false
+python-versions = ">= 3.7"
+
+[package.dependencies]
+jmespath = ">=0.7.1,<2.0.0"
+python-dateutil = ">=2.1,<3.0.0"
+urllib3 = ">=1.25.4,<1.27"
+
+[package.extras]
+crt = ["awscrt (==0.16.9)"]
+
+[[package]]
 name = "cachetools"
 version = "5.3.0"
 description = "Extensible memoizing collections and decorators"
@@ -573,6 +605,14 @@ MarkupSafe = ">=2.0"
 i18n = ["Babel (>=2.7)"]
 
 [[package]]
+name = "jmespath"
+version = "1.0.1"
+description = "JSON Matching Expressions"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[[package]]
 name = "jsonpointer"
 version = "2.3"
 description = "Identify specific nodes in a JSON document (RFC 6901)"
@@ -745,6 +785,14 @@ python-versions = ">=3.7"
 name = "lit"
 version = "15.0.7"
 description = "A Software Testing Tool"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "lmdb"
+version = "1.4.0"
+description = "Universal Python binding for the LMDB 'Lightning' Database"
 category = "main"
 optional = false
 python-versions = "*"
@@ -1475,6 +1523,36 @@ pygments = ">=2.13.0,<3.0.0"
 jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
+name = "s3transfer"
+version = "0.6.0"
+description = "An Amazon S3 Transfer Manager"
+category = "main"
+optional = false
+python-versions = ">= 3.7"
+
+[package.dependencies]
+botocore = ">=1.12.36,<2.0a.0"
+
+[package.extras]
+crt = ["botocore[crt] (>=1.20.29,<2.0a.0)"]
+
+[[package]]
+name = "scipy"
+version = "1.9.3"
+description = "Fundamental algorithms for scientific computing in Python"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.dependencies]
+numpy = ">=1.18.5,<1.26.0"
+
+[package.extras]
+test = ["pytest", "pytest-cov", "pytest-xdist", "asv", "mpmath", "gmpy2", "threadpoolctl", "scikit-umfpack"]
+doc = ["sphinx (!=4.1.0)", "pydata-sphinx-theme (==0.9.0)", "sphinx-panels (>=0.5.2)", "matplotlib (>2)", "numpydoc", "sphinx-tabs"]
+dev = ["mypy", "typing-extensions", "pycodestyle", "flake8"]
+
+[[package]]
 name = "semver"
 version = "2.13.0"
 description = "Python helper for Semantic Versioning (http://semver.org/)"
@@ -1612,6 +1690,37 @@ python-versions = ">=3.8"
 
 [package.dependencies]
 mpmath = ">=0.19"
+
+[[package]]
+name = "tape-proteins"
+version = "0.5"
+description = "Repostory of Protein Benchmarking and Modeling"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+biopython = "*"
+boto3 = "*"
+filelock = "*"
+lmdb = "*"
+requests = "*"
+scipy = "*"
+tensorboardX = "*"
+tqdm = "*"
+
+[[package]]
+name = "tensorboardx"
+version = "2.6"
+description = "TensorBoardX lets you watch Tensors Flow without Tensorflow"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+numpy = "*"
+packaging = "*"
+protobuf = ">=3.8.0,<4"
 
 [[package]]
 name = "terminado"
@@ -1983,7 +2092,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "flake8 (<5)", "pytest-co
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "c748285bd150fadef69123d60f0b4ad96d99715916c7e1ab30214132749f8aed"
+content-hash = "ad6054ae4a119d961e9941f135489d1b89310303aefc27d3132fbd1ed1c35a0f"
 
 [metadata.files]
 altair = []
@@ -2027,6 +2136,8 @@ beautifulsoup4 = []
 biopython = []
 bleach = []
 blinker = []
+boto3 = []
+botocore = []
 cachetools = []
 certifi = []
 cffi = []
@@ -2071,6 +2182,7 @@ ipywidgets = []
 isoduration = []
 jedi = []
 jinja2 = []
+jmespath = []
 jsonpointer = []
 jsonschema = []
 jupyter-client = []
@@ -2082,6 +2194,7 @@ jupyter-server-terminals = []
 jupyterlab-pygments = []
 jupyterlab-widgets = []
 lit = []
+lmdb = []
 markdown-it-py = []
 markupsafe = []
 matplotlib-inline = []
@@ -2205,6 +2318,8 @@ requests = []
 rfc3339-validator = []
 rfc3986-validator = []
 rich = []
+s3transfer = []
+scipy = []
 semver = []
 send2trash = [
     {file = "Send2Trash-1.8.0-py3-none-any.whl", hash = "sha256:f20eaadfdb517eaca5ce077640cb261c7d2698385a6a0f072a4a5447fd49fa08"},
@@ -2225,6 +2340,8 @@ stack-data = []
 stmol = []
 streamlit = []
 sympy = []
+tape-proteins = []
+tensorboardx = []
 terminado = []
 tinycss2 = []
 tokenizers = []
