@@ -2,14 +2,24 @@ from enum import Enum
 from io import StringIO
 from urllib import request
 
+import streamlit as st
 import torch
 from Bio.PDB import PDBParser, Polypeptide, Structure
 from tape import ProteinBertModel, TAPETokenizer
 from transformers import T5EncoderModel, T5Tokenizer
 
 
-class Model(str, Enum):
-    tape_bert = "bert-base"
+class ModelType(str, Enum):
+    TAPE_BERT = "bert-base"
+    PROT_T5 = "prot_t5_xl_half_uniref50-enc"
+
+
+class Model:
+    def __init__(self, name, layers, heads):
+        self.name: ModelType = name
+        self.layers: int = layers
+        self.heads: int = heads
+
 
 def get_structure(pdb_code: str) -> Structure:
     """
@@ -56,9 +66,9 @@ def get_tape_bert() -> tuple[TAPETokenizer, ProteinBertModel]:
     model = ProteinBertModel.from_pretrained('bert-base', output_attentions=True)
     return tokenizer, model
 
-
+@st.cache
 def get_attention(
-    pdb_code: str, model: Model = Model.tape_bert
+    pdb_code: str, model: ModelType = ModelType.TAPE_BERT  
 ):
     """
     Get attention from T5
@@ -70,8 +80,8 @@ def get_attention(
     # TODO handle multiple sequences
     sequence = sequences[0]
 
-    match model:
-        case model.tape_bert:
+    match model.name:
+        case ModelType.TAPE_BERT:
             tokenizer, model = get_tape_bert()
             token_idxs = tokenizer.encode(sequence).tolist()
             inputs = torch.tensor(token_idxs).unsqueeze(0)
@@ -80,9 +90,10 @@ def get_attention(
                 # Remove attention from <CLS> (first) and <SEP> (last) token
             attns = [attn[:, :, 1:-1, 1:-1] for attn in attns]
             attns = torch.stack([attn.squeeze(0) for attn in attns])
-        case model.prot_T5:
+        case ModelType.PROT_T5:
             # Space separate sequences
             sequences = [" ".join(sequence) for sequence in sequences]
             tokenizer, model = get_protT5()
 
     return attns
+

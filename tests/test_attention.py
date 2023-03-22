@@ -2,7 +2,7 @@ import torch
 from Bio.PDB.Structure import Structure
 from transformers import T5EncoderModel, T5Tokenizer
 
-from protention.attention import (Model, get_attention, get_protT5,
+from protention.attention import (ModelType, get_attention, get_protT5,
                                   get_sequences, get_structure)
 
 
@@ -38,7 +38,7 @@ def test_get_protT5():
 
 def test_get_attention_tape():
 
-    result = get_attention("1AKE", model=Model.tape_bert)
+    result = get_attention("1AKE", model=ModelType.tape_bert)
 
     assert result is not None
     assert result.shape == torch.Size([12,12,456,456])
