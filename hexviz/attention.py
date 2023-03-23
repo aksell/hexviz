@@ -67,7 +67,7 @@ def get_tape_bert() -> Tuple[TAPETokenizer, ProteinBertModel]:
     model = ProteinBertModel.from_pretrained('bert-base', output_attentions=True)
     return tokenizer, model
 
-@st.cache_data
+@st.cache
 def get_attention(
     sequence: List[str], model_type: ModelType = ModelType.TAPE_BERT  
 ):
@@ -105,7 +105,7 @@ def unidirectional_sum_filtered(attention, layer, head, threshold):
                 unidirectional_sum_for_head.append((sum, i, j))
     return unidirectional_sum_for_head
 
-@st.cache_data
+@st.cache
 def get_attention_pairs(pdb_code: str, layer: int, head: int, threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT):
     # fetch structure
     structure = get_structure(pdb_code=pdb_code)
