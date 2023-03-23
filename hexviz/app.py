@@ -5,8 +5,6 @@ from stmol import showmol
 
 from hexviz.attention import Model, ModelType, get_attention_pairs
 
-st.sidebar.title("pLM Attention Visualization")
-
 st.title("pLM Attention Visualization")
 
 # Define list of model types
