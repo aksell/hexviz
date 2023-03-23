@@ -3,7 +3,7 @@ import stmol
 import streamlit as st
 from stmol import showmol
 
-from protention.attention import Model, ModelType, get_attention
+from protention.attention import Model, ModelType, get_attention_pairs
 
 st.sidebar.title("pLM Attention Visualization")
 
@@ -27,12 +27,14 @@ with right:
 
 min_attn = st.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.15)
 
-attention = get_attention(pdb_id, model=selected_model.name)
+attention_pairs = get_attention_pairs(pdb_id, layer, head, min_attn, model_type=selected_model.name)
 
 def get_3dview(pdb):
     xyzview = py3Dmol.view(query=f"pdb:{pdb}")
     xyzview.setStyle({"cartoon": {"color": "spectrum"}})
     stmol.add_hover(xyzview, backgroundColor="black", fontColor="white")
+    for att_weight, first, second in attention_pairs:
+        stmol.add_cylinder(xyzview, start=first, end=second, cylradius=att_weight*3, cylColor='red', dashed=False)
     return xyzview
 
 
