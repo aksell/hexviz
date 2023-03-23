@@ -1,5 +1,6 @@
 from enum import Enum
 from io import StringIO
+from typing import List, Tuple
 from urllib import request
 
 import streamlit as st
@@ -32,7 +33,7 @@ def get_structure(pdb_code: str) -> Structure:
     structure = parser.get_structure(pdb_code, file)
     return structure
 
-def get_sequences(structure: Structure) -> list[str]:
+def get_sequences(structure: Structure) -> List[str]:
     """
     Get list of sequences with residues on a single letter format
 
@@ -47,7 +48,7 @@ def get_sequences(structure: Structure) -> list[str]:
         sequences.append(list(residues_single_letter))
     return sequences
 
-def get_protT5() -> tuple[T5Tokenizer, T5EncoderModel]:
+def get_protT5() -> Tuple[T5Tokenizer, T5EncoderModel]:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     tokenizer = T5Tokenizer.from_pretrained(
         "Rostlab/prot_t5_xl_half_uniref50-enc", do_lower_case=False
@@ -61,32 +62,32 @@ def get_protT5() -> tuple[T5Tokenizer, T5EncoderModel]:
 
     return tokenizer, model
 
-def get_tape_bert() -> tuple[TAPETokenizer, ProteinBertModel]:
+def get_tape_bert() -> Tuple[TAPETokenizer, ProteinBertModel]:
     tokenizer = TAPETokenizer()
     model = ProteinBertModel.from_pretrained('bert-base', output_attentions=True)
     return tokenizer, model
 
 @st.cache_data
 def get_attention(
-    sequence: list[str], model_type: ModelType = ModelType.TAPE_BERT  
+    sequence: List[str], model_type: ModelType = ModelType.TAPE_BERT  
 ):
-    match model_type:
-        case ModelType.TAPE_BERT:
-            tokenizer, model = get_tape_bert()
-            token_idxs = tokenizer.encode(sequence).tolist()
-            inputs = torch.tensor(token_idxs).unsqueeze(0)
-            with torch.no_grad():
-                attns = model(inputs)[-1]
-                # Remove attention from <CLS> (first) and <SEP> (last) token
-            attns = [attn[:, :, 1:-1, 1:-1] for attn in attns]
-            attns = torch.stack([attn.squeeze(0) for attn in attns])
-        case ModelType.PROT_T5:
+    if model_type == ModelType.TAPE_BERT:
+        tokenizer, model = get_tape_bert()
+        token_idxs = tokenizer.encode(sequence).tolist()
+        inputs = torch.tensor(token_idxs).unsqueeze(0)
+        with torch.no_grad():
+            attns = model(inputs)[-1]
+            # Remove attention from <CLS> (first) and <SEP> (last) token
+        attns = [attn[:, :, 1:-1, 1:-1] for attn in attns]
+        attns = torch.stack([attn.squeeze(0) for attn in attns])
+    elif model_type == ModelType.PROT_T5:
             attns = None
             # Space separate sequences
             sequences = [" ".join(sequence) for sequence in sequences]
             tokenizer, model = get_protT5()
-        case _:
-            raise ValueError(f"Model {model_type} not supported")
+    else:
+        raise ValueError(f"Model {model_type} not supported")
+
     return attns
 
 def unidirectional_sum_filtered(attention, layer, head, threshold):

@@ -5,7 +5,7 @@ description = "Visualize and analyze attention patterns for protein language mod
 authors = ["Aksel Lenes <aksel.lenes@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.8.9"
 streamlit = "^1.20.0"
 stmol = "^0.0.9"
 biopython = "^1.81"
