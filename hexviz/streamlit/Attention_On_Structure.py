@@ -3,7 +3,7 @@ import stmol
 import streamlit as st
 from stmol import showmol
 
-from protention.attention import Model, ModelType, get_attention_pairs
+from hexviz.attention import Model, ModelType, get_attention_pairs
 
 st.sidebar.title("pLM Attention Visualization")
 

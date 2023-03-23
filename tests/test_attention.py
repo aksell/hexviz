@@ -2,9 +2,9 @@ import torch
 from Bio.PDB.Structure import Structure
 from transformers import T5EncoderModel, T5Tokenizer
 
-from protention.attention import (ModelType, get_attention, get_protT5,
-                                  get_sequences, get_structure,
-                                  unidirectional_sum_filtered)
+from hexviz.attention import (ModelType, get_attention, get_protT5,
+                              get_sequences, get_structure,
+                              unidirectional_sum_filtered)
 
 
 def test_get_structure():

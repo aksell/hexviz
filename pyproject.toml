@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "protention"
+name = "hexviz"
 version = "0.1.0"
-description = "Visualize and analyze attention patterns for protein language model on structures"
+description = "Visualize and analyze attention patterns for protein language models on structures"
 authors = ["Aksel Lenes <aksel.lenes@gmail.com>"]
 
 [tool.poetry.dependencies]
