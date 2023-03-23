@@ -1,26 +1,12 @@
 ---
-title: Hexviz
-emoji: 👁️🧬
-colorFrom: green
-colorTo: purple
+title: Test Space
+emoji: 🏢
+colorFrom: pink
+colorTo: red
 sdk: streamlit
 sdk_version: 1.17.0
-app_file: ./hexvis/app.py
+app_file: app.py
 pinned: false
 ---
-# hexviz
-Visualize attention pattern on 3D protein structures
 
-## Install and run
-
-```shell
-poetry install
-
-poetry run streamlit run hexviz/streamlit/Attention_On_Structure.py
-```
-
-## Export dependcies from poetry
-Spaces [require](https://huggingface.co/docs/hub/spaces-dependencies#adding-your-own-dependencies) dependencies in a `requirements.txt` file. Export depencies from poetry's `pyproject.toml` file with:
-```shell
-poetry export -f requirements.txt --output requirements.txt --without-hashes
-```
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
