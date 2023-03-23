@@ -21,11 +21,13 @@ pdb_id = st.text_input("PDB ID", "4RW0")
 
 left, right = st.columns(2)
 with left:
-    layer = st.number_input("Layer", value=1, min_value=1, max_value=selected_model.layers)
+    layer_one = st.number_input("Layer", value=1, min_value=1, max_value=selected_model.layers)
+    layer = layer_one - 1
 with right:
-    head = st.number_input("Head", value=1, min_value=1, max_value=selected_model.heads)
+    head_one = st.number_input("Head", value=1, min_value=1, max_value=selected_model.heads)
+    head = head_one - 1
 
-min_attn = st.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.15)
+min_attn = st.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
 
 attention_pairs = get_attention_pairs(pdb_id, layer, head, min_attn, model_type=selected_model.name)
 
