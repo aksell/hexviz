@@ -12,9 +12,9 @@ from transformers import (AutoTokenizer, GPT2LMHeadModel, T5EncoderModel,
 
 
 class ModelType(str, Enum):
-    TAPE_BERT = "bert-base"
+    TAPE_BERT = "TAPE-BERT"
     PROT_T5 = "prot_t5_xl_half_uniref50-enc"
-    ZymCTRL = "zymctrl"
+    ZymCTRL = "ZymCTRL"
 
 
 class Model:
@@ -23,7 +23,7 @@ class Model:
         self.layers: int = layers
         self.heads: int = heads
 
-
+@st.cache
 def get_structure(pdb_code: str) -> Structure:
     """
     Get structure from PDB
@@ -77,6 +77,7 @@ def get_zymctrl() -> Tuple[AutoTokenizer, GPT2LMHeadModel]:
     model = GPT2LMHeadModel.from_pretrained('nferruz/ZymCTRL').to(device)
     return tokenizer, model
 
+@st.cache
 def get_attention(
     sequence: str, model_type: ModelType = ModelType.TAPE_BERT  
 ):
