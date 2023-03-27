@@ -48,6 +48,7 @@ def get_sequences(structure: Structure) -> List[str]:
         sequences.append(list(residues_single_letter))
     return sequences
 
+@st.cache
 def get_protT5() -> Tuple[T5Tokenizer, T5EncoderModel]:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     tokenizer = T5Tokenizer.from_pretrained(
@@ -69,7 +70,7 @@ def get_tape_bert() -> Tuple[TAPETokenizer, ProteinBertModel]:
 
 @st.cache
 def get_attention(
-    sequence: List[str], model_type: ModelType = ModelType.TAPE_BERT  
+    sequence: str, model_type: ModelType = ModelType.TAPE_BERT  
 ):
     if model_type == ModelType.TAPE_BERT:
         tokenizer, model = get_tape_bert()
@@ -81,9 +82,18 @@ def get_attention(
         attns = [attn[:, :, 1:-1, 1:-1] for attn in attns]
         attns = torch.stack([attn.squeeze(0) for attn in attns])
     elif model_type == ModelType.PROT_T5:
-            attns = None
-            # Space separate sequences
-            sequences = [" ".join(sequence) for sequence in sequences]
+            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            # Introduce white-space between all amino acids
+            sequence = " ".join(sequence)
+            # tokenize sequences and pad up to the longest sequence in the batch
+            ids = tokenizer.encode_plus(sequence, add_special_tokens=True, padding="longest")
+
+            input_ids = torch.tensor(ids['input_ids']).to(device)
+            attention_mask = torch.tensor(ids['attention_mask']).to(device)
+
+            with torch.no_grad():
+                attns = model(input_ids=input_ids,attention_mask=attention_mask)[-1]
+
             tokenizer, model = get_protT5()
     else:
         raise ValueError(f"Model {model_type} not supported")
