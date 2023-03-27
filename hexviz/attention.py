@@ -7,12 +7,14 @@ import streamlit as st
 import torch
 from Bio.PDB import PDBParser, Polypeptide, Structure
 from tape import ProteinBertModel, TAPETokenizer
-from transformers import T5EncoderModel, T5Tokenizer
+from transformers import (AutoTokenizer, GPT2LMHeadModel, T5EncoderModel,
+                          T5Tokenizer)
 
 
 class ModelType(str, Enum):
     TAPE_BERT = "bert-base"
     PROT_T5 = "prot_t5_xl_half_uniref50-enc"
+    ZymCTRL = "zymctrl"
 
 
 class Model:
@@ -45,7 +47,7 @@ def get_sequences(structure: Structure) -> List[str]:
         # TODO ask if using protein_letters_3to1_extended makes sense
         residues_single_letter = map(lambda x: Polypeptide.protein_letters_3to1.get(x, "X"), residues)
 
-        sequences.append(list(residues_single_letter))
+        sequences.append("".join(list(residues_single_letter)))
     return sequences
 
 @st.cache
@@ -69,18 +71,59 @@ def get_tape_bert() -> Tuple[TAPETokenizer, ProteinBertModel]:
     return tokenizer, model
 
 @st.cache
+def get_zymctrl() -> Tuple[AutoTokenizer, GPT2LMHeadModel]:
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    tokenizer = AutoTokenizer.from_pretrained('nferruz/ZymCTRL')
+    model = GPT2LMHeadModel.from_pretrained('nferruz/ZymCTRL').to(device)
+    return tokenizer, model
+
 def get_attention(
     sequence: str, model_type: ModelType = ModelType.TAPE_BERT  
 ):
+    """
+    Returns a tensor of shape [n_layers, n_heads, n_res, n_res] with attention weights
+    """
     if model_type == ModelType.TAPE_BERT:
         tokenizer, model = get_tape_bert()
         token_idxs = tokenizer.encode(sequence).tolist()
         inputs = torch.tensor(token_idxs).unsqueeze(0)
         with torch.no_grad():
-            attns = model(inputs)[-1]
+            attentions = model(inputs)[-1]
             # Remove attention from <CLS> (first) and <SEP> (last) token
-        attns = [attn[:, :, 1:-1, 1:-1] for attn in attns]
-        attns = torch.stack([attn.squeeze(0) for attn in attns])
+        attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
+        attentions = torch.stack([attention.squeeze(0) for attention in attentions])
+
+    elif model_type == ModelType.ZymCTRL:
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        tokenizer, model = get_zymctrl()
+        inputs = tokenizer(sequence, return_tensors='pt').input_ids.to(device)
+        attention_mask = tokenizer(sequence, return_tensors='pt').attention_mask.to(device)
+
+        with torch.no_grad():
+            outputs = model(inputs, attention_mask=attention_mask, output_attentions=True)
+            attentions = outputs.attentions
+        if attentions[0].shape[-1] == attentions[0].shape[-2] == 1:
+            reshaped = [attention.view(attention.shape[1], attention.shape[0]) for attention in attentions]
+            n_residues = reshaped[0].shape[-1]
+            n_heads = 16
+            i,j = torch.triu_indices(n_residues, n_residues)
+
+            attentions_symmetric = []
+            # Make symmetric attention matrix 
+            for attention in reshaped:
+                x = torch.zeros(n_heads, n_residues, n_residues)
+                x[:,i,j] = attention
+                x[:,j,i] = attention
+                attentions_symmetric.append(x)
+            attentions = torch.stack([attention for attention in attentions_symmetric])
+        else:
+            # torch.Size([1, n_heads, n_res, n_res]) -> torch.Size([n_heads, n_res, n_res])
+            attention_squeezed = [torch.squeeze(attention) for attention in attentions]
+
+            # ([n_heads, n_res, n_res]*n_layers) -> [n_layers, n_heads, n_res, n_res]
+            attention_stacked = torch.stack([attention for attention in attention_squeezed])
+            attentions = attention_stacked
+
     elif model_type == ModelType.PROT_T5:
             device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
             # Introduce white-space between all amino acids
@@ -98,7 +141,7 @@ def get_attention(
     else:
         raise ValueError(f"Model {model_type} not supported")
 
-    return attns
+    return attentions
 
 def unidirectional_sum_filtered(attention, layer, head, threshold):
     num_layers, num_heads, seq_len, _ = attention.shape

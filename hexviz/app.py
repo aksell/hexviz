@@ -9,6 +9,7 @@ st.title("pLM Attention Visualization")
 
 # Define list of model types
 models = [
+    Model(name=ModelType.ZymCTRL, layers=36, heads=16),
     Model(name=ModelType.TAPE_BERT, layers=12, heads=12),
     # Model(name=ModelType.PROT_T5, layers=24, heads=32),
 ]

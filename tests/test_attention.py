@@ -1,9 +1,10 @@
 import torch
 from Bio.PDB.Structure import Structure
-from transformers import T5EncoderModel, T5Tokenizer
+from transformers import (GPT2LMHeadModel, GPT2TokenizerFast, T5EncoderModel,
+                          T5Tokenizer)
 
 from hexviz.attention import (ModelType, get_attention, get_protT5,
-                              get_sequences, get_structure,
+                              get_sequences, get_structure, get_zymctrl,
                               unidirectional_sum_filtered)
 
 
@@ -37,12 +38,42 @@ def test_get_protT5():
     assert isinstance(tokenizer, T5Tokenizer)
     assert isinstance(model, T5EncoderModel)
 
-def test_get_attention_tape():
-
-    result = get_attention("1AKE", model=ModelType.TAPE_BERT)
+def test_get_zymctrl():
+    result = get_zymctrl()
 
     assert result is not None
-    assert result.shape == torch.Size([12,12,456,456])
+    assert isinstance(result, tuple)
+
+    tokenizer, model = result
+
+    assert isinstance(tokenizer, GPT2TokenizerFast)
+    assert isinstance(model, GPT2LMHeadModel)
+
+def test_get_attention_zymctrl():
+
+    result = get_attention("GGG", model_type=ModelType.ZymCTRL)
+
+    assert result is not None
+    assert result.shape == torch.Size([36,16,3,3])
+
+def test_get_attention_zymctrl_long_chain():
+    structure = get_structure(pdb_code="6A5J") # 13 residues long
+
+    sequences = get_sequences(structure)
+
+    result = get_attention(sequences[0], model_type=ModelType.ZymCTRL)
+
+    assert result is not None
+    assert result.shape == torch.Size([36,16,13,13])
+
+def test_get_attention_tape():
+    structure = get_structure(pdb_code="6A5J") # 13 residues long
+    sequences = get_sequences(structure)
+
+    result = get_attention(sequences[0], model_type=ModelType.TAPE_BERT)
+
+    assert result is not None
+    assert result.shape == torch.Size([12,12,13,13])
 
 def test_get_unidirection_sum_filtered():
     # 1 head, 1 layer, 4 residues long attention tensor
