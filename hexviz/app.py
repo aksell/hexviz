@@ -5,12 +5,18 @@ from stmol import showmol
 
 from hexviz.attention import Model, ModelType, get_attention_pairs
 
-st.title("pLM Attention Visualization")
+st.title("Attention Visualization on proteins")
+
+"""
+Visualize attention weights on protein structures for the protein language models ZymCTRL and TAPE-BERT.
+Pick a PDB ID, layer and head to visualize attention.
+"""
+
 
 # Define list of model types
 models = [
-    Model(name=ModelType.ZymCTRL, layers=36, heads=16),
     Model(name=ModelType.TAPE_BERT, layers=12, heads=12),
+    Model(name=ModelType.ZymCTRL, layers=36, heads=16),
     # Model(name=ModelType.PROT_T5, layers=24, heads=32),
 ]
 
@@ -42,3 +48,7 @@ def get_3dview(pdb):
 
 xyzview = get_3dview(pdb_id)
 showmol(xyzview, height=500, width=800)
+
+"""
+More models will be added soon.
+"""
