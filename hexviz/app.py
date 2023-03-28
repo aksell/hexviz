@@ -33,7 +33,9 @@ with right:
     head_one = st.number_input("Head", value=1, min_value=1, max_value=selected_model.heads)
     head = head_one - 1
 
-min_attn = st.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
+
+with st.expander("Configue parameters", expanded=False):
+    min_attn = st.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
 
 attention_pairs = get_attention_pairs(pdb_id, layer, head, min_attn, model_type=selected_model.name)
 
