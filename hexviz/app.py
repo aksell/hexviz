@@ -3,7 +3,8 @@ import stmol
 import streamlit as st
 from stmol import showmol
 
-from hexviz.attention import Model, ModelType, get_attention_pairs
+from hexviz.attention import get_attention_pairs
+from hexviz.models import Model, ModelType
 
 st.title("Attention Visualization on proteins")
 
@@ -12,8 +13,6 @@ Visualize attention weights on protein structures for the protein language model
 Pick a PDB ID, layer and head to visualize attention.
 """
 
-
-# Define list of model types
 models = [
     # Model(name=ModelType.ProtGPT2, layers=36, heads=20),
     Model(name=ModelType.TAPE_BERT, layers=12, heads=12),

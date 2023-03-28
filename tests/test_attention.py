@@ -1,11 +1,8 @@
 import torch
 from Bio.PDB.Structure import Structure
-from transformers import (GPT2LMHeadModel, GPT2TokenizerFast, T5EncoderModel,
-                          T5Tokenizer)
 
-from hexviz.attention import (ModelType, get_attention, get_protT5,
-                              get_sequences, get_structure, get_zymctrl,
-                              unidirectional_sum_filtered)
+from hexviz.attention import (ModelType, get_attention, get_sequences,
+                              get_structure, unidirectional_sum_filtered)
 
 
 def test_get_structure():
@@ -27,27 +24,6 @@ def test_get_sequences():
     A, B = sequences
     assert A[:3] == ["M", "R", "I"]
 
-def test_get_protT5():
-    result = get_protT5()
-
-    assert result is not None
-    assert isinstance(result, tuple)
-
-    tokenizer, model = result
-
-    assert isinstance(tokenizer, T5Tokenizer)
-    assert isinstance(model, T5EncoderModel)
-
-def test_get_zymctrl():
-    result = get_zymctrl()
-
-    assert result is not None
-    assert isinstance(result, tuple)
-
-    tokenizer, model = result
-
-    assert isinstance(tokenizer, GPT2TokenizerFast)
-    assert isinstance(model, GPT2LMHeadModel)
 
 def test_get_attention_zymctrl():
 
