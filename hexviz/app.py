@@ -50,6 +50,7 @@ def get_3dview(pdb):
 
 xyzview = get_3dview(pdb_id)
 showmol(xyzview, height=500, width=800)
+st.markdown(f'PDB: [{pdb_id}](https://www.rcsb.org/structure/{pdb_id})', unsafe_allow_html=True)
 
 """
 More models will be added soon.
