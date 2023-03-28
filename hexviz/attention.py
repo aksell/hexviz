@@ -103,27 +103,12 @@ def get_attention(
         with torch.no_grad():
             outputs = model(inputs, attention_mask=attention_mask, output_attentions=True)
             attentions = outputs.attentions
-        if attentions[0].shape[-1] == attentions[0].shape[-2] == 1:
-            reshaped = [attention.view(attention.shape[1], attention.shape[0]) for attention in attentions]
-            n_residues = reshaped[0].shape[-1]
-            n_heads = 16
-            i,j = torch.triu_indices(n_residues, n_residues)
 
-            attentions_symmetric = []
-            # Make symmetric attention matrix 
-            for attention in reshaped:
-                x = torch.zeros(n_heads, n_residues, n_residues)
-                x[:,i,j] = attention
-                x[:,j,i] = attention
-                attentions_symmetric.append(x)
-            attentions = torch.stack([attention for attention in attentions_symmetric])
-        else:
-            # torch.Size([1, n_heads, n_res, n_res]) -> torch.Size([n_heads, n_res, n_res])
-            attention_squeezed = [torch.squeeze(attention) for attention in attentions]
-
-            # ([n_heads, n_res, n_res]*n_layers) -> [n_layers, n_heads, n_res, n_res]
-            attention_stacked = torch.stack([attention for attention in attention_squeezed])
-            attentions = attention_stacked
+        # torch.Size([1, n_heads, n_res, n_res]) -> torch.Size([n_heads, n_res, n_res])
+        attention_squeezed = [torch.squeeze(attention) for attention in attentions]
+        # ([n_heads, n_res, n_res]*n_layers) -> [n_layers, n_heads, n_res, n_res]
+        attention_stacked = torch.stack([attention for attention in attention_squeezed])
+        attentions = attention_stacked
 
     elif model_type == ModelType.PROT_T5:
             device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
