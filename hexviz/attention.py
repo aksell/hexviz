@@ -66,6 +66,7 @@ def get_protT5() -> Tuple[T5Tokenizer, T5EncoderModel]:
 
     return tokenizer, model
 
+@st.cache
 def get_tape_bert() -> Tuple[TAPETokenizer, ProteinBertModel]:
     tokenizer = TAPETokenizer()
     model = ProteinBertModel.from_pretrained('bert-base', output_attentions=True)
