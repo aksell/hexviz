@@ -15,6 +15,7 @@ class ModelType(str, Enum):
     TAPE_BERT = "TAPE-BERT"
     PROT_T5 = "prot_t5_xl_half_uniref50-enc"
     ZymCTRL = "ZymCTRL"
+    ProtGPT2 = "ProtGPT2"
 
 
 class Model:
@@ -78,12 +79,21 @@ def get_zymctrl() -> Tuple[AutoTokenizer, GPT2LMHeadModel]:
     return tokenizer, model
 
 @st.cache
+def get_protgpt2() -> Tuple[AutoTokenizer, GPT2LMHeadModel]:
+    device = torch.device('cuda')
+    tokenizer = AutoTokenizer.from_pretrained('nferruz/ProtGPT2')
+    model = GPT2LMHeadModel.from_pretrained('nferruz/ProtGPT2').to(device)
+    return tokenizer, model
+
+@st.cache
 def get_attention(
     sequence: str, model_type: ModelType = ModelType.TAPE_BERT  
 ):
     """
     Returns a tensor of shape [n_layers, n_heads, n_res, n_res] with attention weights
     """
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     if model_type == ModelType.TAPE_BERT:
         tokenizer, model = get_tape_bert()
         token_idxs = tokenizer.encode(sequence).tolist()
@@ -95,7 +105,6 @@ def get_attention(
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     elif model_type == ModelType.ZymCTRL:
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         tokenizer, model = get_zymctrl()
         inputs = tokenizer(sequence, return_tensors='pt').input_ids.to(device)
         attention_mask = tokenizer(sequence, return_tensors='pt').attention_mask.to(device)
@@ -110,20 +119,32 @@ def get_attention(
         attention_stacked = torch.stack([attention for attention in attention_squeezed])
         attentions = attention_stacked
 
+    elif model_type == ModelType.ProtGPT2:
+        tokenizer, model = get_protgpt2()
+        input_ids = tokenizer.encode(input, return_tensors='pt').to(device)
+        with torch.no_grad():
+            outputs = model(inputs, attention_mask=attention_mask, output_attentions=True)
+            attentions = outputs.attentions
+
+        # torch.Size([1, n_heads, n_res, n_res]) -> torch.Size([n_heads, n_res, n_res])
+        attention_squeezed = [torch.squeeze(attention) for attention in attentions]
+        # ([n_heads, n_res, n_res]*n_layers) -> [n_layers, n_heads, n_res, n_res]
+        attention_stacked = torch.stack([attention for attention in attention_squeezed])
+        attentions = attention_stacked
+
     elif model_type == ModelType.PROT_T5:
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-            # Introduce white-space between all amino acids
-            sequence = " ".join(sequence)
-            # tokenize sequences and pad up to the longest sequence in the batch
-            ids = tokenizer.encode_plus(sequence, add_special_tokens=True, padding="longest")
+        # Introduce white-space between all amino acids
+        sequence = " ".join(sequence)
+        # tokenize sequences and pad up to the longest sequence in the batch
+        ids = tokenizer.encode_plus(sequence, add_special_tokens=True, padding="longest")
 
-            input_ids = torch.tensor(ids['input_ids']).to(device)
-            attention_mask = torch.tensor(ids['attention_mask']).to(device)
+        input_ids = torch.tensor(ids['input_ids']).to(device)
+        attention_mask = torch.tensor(ids['attention_mask']).to(device)
 
-            with torch.no_grad():
-                attns = model(input_ids=input_ids,attention_mask=attention_mask)[-1]
+        with torch.no_grad():
+            attns = model(input_ids=input_ids,attention_mask=attention_mask)[-1]
 
-            tokenizer, model = get_protT5()
+        tokenizer, model = get_protT5()
     else:
         raise ValueError(f"Model {model_type} not supported")
 
