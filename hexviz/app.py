@@ -3,27 +3,25 @@ import stmol
 import streamlit as st
 from stmol import showmol
 
-from hexviz.attention import get_attention_pairs
+from hexviz.attention import get_attention_pairs, get_structure
 from hexviz.models import Model, ModelType
 
 st.title("Attention Visualization on proteins")
 
 """
-Visualize attention weights on protein structures for the protein language models ProtGPT2, TAPE-BERT and ZymCTRL.
+Visualize attention weights on protein structures for the protein language models TAPE-BERT and ZymCTRL.
 Pick a PDB ID, layer and head to visualize attention.
 """
 
 models = [
-    # Model(name=ModelType.ProtGPT2, layers=36, heads=20),
     Model(name=ModelType.TAPE_BERT, layers=12, heads=12),
     Model(name=ModelType.ZymCTRL, layers=36, heads=16),
-    # Model(name=ModelType.PROT_T5, layers=24, heads=32),
 ]
 
 selected_model_name = st.selectbox("Select a model", [model.name.value for model in models], index=0)
 selected_model = next((model for model in models if model.name.value == selected_model_name), None)
 
-pdb_id = st.text_input("PDB ID", "4RW0")
+pdb_id = st.text_input("PDB ID", "1I60")
 
 left, right = st.columns(2)
 with left:
