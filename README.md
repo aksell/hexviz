@@ -24,3 +24,7 @@ Spaces [require](https://huggingface.co/docs/hub/spaces-dependencies#adding-your
 ```shell
 poetry export -f requirements.txt --output requirements.txt --without-hashes
 ```
+
+## Acknowledgements
+This project builds on the attention visualization introduced and developed in 
+https://github.com/salesforce/provis#provis-attention-visualizer
