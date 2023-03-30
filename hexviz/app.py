@@ -34,8 +34,15 @@ with right:
     head = head_one - 1
 
 
-with st.expander("Configue parameters", expanded=False):
+with st.expander("Configure parameters", expanded=False):
     min_attn = st.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
+    try:
+        structure = get_structure(pdb_id)
+        ec_class = structure.header["compound"]["1"]["ec"]
+    except KeyError:
+        ec_class = None
+    if ec_class and selected_model.name == ModelType.ZymCTRL:
+        ec_class = st.text_input("Enzyme classification number fetched from PDB", ec_class)
 
 attention_pairs = get_attention_pairs(pdb_id, layer, head, min_attn, model_type=selected_model.name)
 
