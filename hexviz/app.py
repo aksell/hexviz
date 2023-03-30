@@ -18,10 +18,6 @@ models = [
     Model(name=ModelType.ZymCTRL, layers=36, heads=16),
 ]
 
-selected_model_name = st.selectbox("Select a model", [model.name.value for model in models], index=0)
-selected_model = next((model for model in models if model.name.value == selected_model_name), None)
-
-
 st.sidebar.markdown(
     """
     Select Protein 
@@ -58,17 +54,15 @@ n_pairs = st.sidebar.number_input("Num attention pairs labeled", value=2, min_va
 label_highest = st.sidebar.checkbox("Label highest attention pairs", value=True)
 # TODO add avg or max attention as params
 
-if selected_model.name == ModelType.ZymCTRL:
-    try:
-        ec_class = structure.header["compound"]["1"]["ec"]
-    except KeyError:
-        ec_class = None
-    if ec_class and selected_model.name == ModelType.ZymCTRL:
-        ec_class = st.sidebar.text_input("Enzyme classification number fetched from PDB", ec_class)
 
 
-left, right = st.columns(2)
+
+
+left, mid, right = st.columns(3)
 with left:
+    selected_model_name = st.selectbox("Select a model", [model.name.value for model in models], index=0)
+    selected_model = next((model for model in models if model.name.value == selected_model_name), None)
+with mid:
     layer_one = st.number_input("Layer", value=10, min_value=1, max_value=selected_model.layers)
     layer = layer_one - 1
 with right:
@@ -76,6 +70,13 @@ with right:
     head = head_one - 1
 
 
+if selected_model.name == ModelType.ZymCTRL:
+    try:
+        ec_class = structure.header["compound"]["1"]["ec"]
+    except KeyError:
+        ec_class = None
+    if ec_class and selected_model.name == ModelType.ZymCTRL:
+        ec_class = st.sidebar.text_input("Enzyme classification number fetched from PDB", ec_class)
 
 attention_pairs = get_attention_pairs(pdb_id, chain_ids=selected_chains, layer=layer, head=head, threshold=min_attn, model_type=selected_model.name)
 
