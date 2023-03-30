@@ -125,6 +125,6 @@ def get_attention_pairs(pdb_code: str, layer: int, head: int, chain_ids: Optiona
                 coord_2 = chain[res_2]["CA"].coord.tolist()
             except KeyError:
                 continue
-            attention_pairs.append((attn_value, coord_1, coord_2))
+            attention_pairs.append((attn_value, coord_1, coord_2, chain.id, res_1, res_2))
         
     return attention_pairs

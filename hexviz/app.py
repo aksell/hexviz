@@ -46,6 +46,8 @@ with right:
 
 with st.expander("Attention parameters", expanded=False):
     min_attn = st.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
+    n_pairs = st.number_input("Num attention pairs labeled", value=2, min_value=1, max_value=100)
+    label_highest = st.checkbox("Label highest attention pairs", value=True)
 
     # TODO add avg or max attention as params
 
@@ -58,6 +60,9 @@ with st.expander("Attention parameters", expanded=False):
 
 attention_pairs = get_attention_pairs(pdb_id, chain_ids=selected_chains, layer=layer, head=head, threshold=min_attn, model_type=selected_model.name)
 
+sorted_by_attention = sorted(attention_pairs, key=lambda x: x[0], reverse=True) 
+top_n = sorted_by_attention[:n_pairs]
+
 def get_3dview(pdb):
     xyzview = py3Dmol.view(query=f"pdb:{pdb}")
     xyzview.setStyle({"cartoon": {"color": "spectrum"}})
@@ -68,12 +73,21 @@ def get_3dview(pdb):
     for chain in hidden_chains:
         xyzview.setStyle({"chain": chain},{"cross":{"hidden":"true"}})
 
-    for att_weight, first, second in attention_pairs:
+    for att_weight, first, second, _, _, _ in attention_pairs:
         stmol.add_cylinder(xyzview, start=first, end=second, cylradius=att_weight, cylColor='red', dashed=False)
+    
+    # get_max_attention(n_pairs)
 
     if label_resi:
         for hl_resi in hl_resi_list:
             xyzview.addResLabels({"chain": hl_chain,"resi": hl_resi},
+            {"backgroundColor": "lightgray","fontColor": "black","backgroundOpacity": 0.5})
+
+    if label_highest:
+        for _, _, _, chain, a, b in top_n:
+            xyzview.addResLabels({"chain": chain,"resi": a},
+            {"backgroundColor": "lightgray","fontColor": "black","backgroundOpacity": 0.5})
+            xyzview.addResLabels({"chain": chain,"resi": b},
             {"backgroundColor": "lightgray","fontColor": "black","backgroundOpacity": 0.5})
     return xyzview
 
@@ -81,6 +95,7 @@ def get_3dview(pdb):
 xyzview = get_3dview(pdb_id)
 showmol(xyzview, height=500, width=800)
 st.markdown(f'PDB: [{pdb_id}](https://www.rcsb.org/structure/{pdb_id})', unsafe_allow_html=True)
+
 
 """
 More models will be added soon. The attention visualization is inspired by [provis](https://github.com/salesforce/provis#provis-attention-visualizer).
