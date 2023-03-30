@@ -1,3 +1,4 @@
+import pandas as pd
 import py3Dmol
 import stmol
 import streamlit as st
@@ -113,6 +114,20 @@ def get_3dview(pdb):
 xyzview = get_3dview(pdb_id)
 showmol(xyzview, height=500, width=800)
 st.markdown(f'PDB: [{pdb_id}](https://www.rcsb.org/structure/{pdb_id})', unsafe_allow_html=True)
+
+
+chain_dict = {f"{chain.id}": chain for chain in list(structure.get_chains())}
+data = []
+for att_weight, _ , _ , chain, first, second in top_n:
+    res1 = chain_dict[chain][first]
+    res2 = chain_dict[chain][second]
+    el = (att_weight, f"{res1.resname:3}{res1.id[1]:0>3} - {res2.resname:3}{res2.id[1]:0>3} ({chain})")
+    data.append(el)
+    # st.write(f"Attention weight: {att_weight:.2f} | Residue pair: {structure.get_chain_id(chain)[first].get_resname()}-{structure.get_chain(chain)[first].full_id[3]}{chain.id}<-->{chain[second].get_resname()}")
+
+df = pd.DataFrame(data, columns=['Avg attention', 'Residue pair'])
+f"Top {n_pairs} attention pairs:"
+st.table(df)
 
 
 """
