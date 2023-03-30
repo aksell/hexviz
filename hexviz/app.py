@@ -35,6 +35,21 @@ hl_resi_list = st.sidebar.multiselect(label="Highlight Residues",options=list(ra
 label_resi = st.sidebar.checkbox(label="Label Residues", value=True)
 
 
+st.sidebar.text("Attention parameters")
+min_attn = st.sidebar.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
+n_pairs = st.sidebar.number_input("Num attention pairs labeled", value=2, min_value=1, max_value=100)
+label_highest = st.sidebar.checkbox("Label highest attention pairs", value=True)
+# TODO add avg or max attention as params
+
+if selected_model.name == ModelType.ZymCTRL:
+    try:
+        ec_class = structure.header["compound"]["1"]["ec"]
+    except KeyError:
+        ec_class = None
+    if ec_class and selected_model.name == ModelType.ZymCTRL:
+        ec_class = st.sidebar.text_input("Enzyme classification number fetched from PDB", ec_class)
+
+
 left, right = st.columns(2)
 with left:
     layer_one = st.number_input("Layer", value=10, min_value=1, max_value=selected_model.layers)
@@ -44,19 +59,6 @@ with right:
     head = head_one - 1
 
 
-with st.expander("Attention parameters", expanded=False):
-    min_attn = st.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
-    n_pairs = st.number_input("Num attention pairs labeled", value=2, min_value=1, max_value=100)
-    label_highest = st.checkbox("Label highest attention pairs", value=True)
-
-    # TODO add avg or max attention as params
-
-    try:
-        ec_class = structure.header["compound"]["1"]["ec"]
-    except KeyError:
-        ec_class = None
-    if ec_class and selected_model.name == ModelType.ZymCTRL:
-        ec_class = st.text_input("Enzyme classification number fetched from PDB", ec_class)
 
 attention_pairs = get_attention_pairs(pdb_id, chain_ids=selected_chains, layer=layer, head=head, threshold=min_attn, model_type=selected_model.name)
 
@@ -76,8 +78,6 @@ def get_3dview(pdb):
     for att_weight, first, second, _, _, _ in attention_pairs:
         stmol.add_cylinder(xyzview, start=first, end=second, cylradius=att_weight, cylColor='red', dashed=False)
     
-    # get_max_attention(n_pairs)
-
     if label_resi:
         for hl_resi in hl_resi_list:
             xyzview.addResLabels({"chain": hl_chain,"resi": hl_resi},
