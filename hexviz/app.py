@@ -31,6 +31,7 @@ structure = get_structure(pdb_id)
 chains = get_chains(structure)
 selected_chains = st.sidebar.multiselect(label="Chain(s)", options=chains, default=chains)
 
+hl_chain = st.sidebar.selectbox(label="Highlight Chain", options=selected_chains, index=0)
 hl_resi_list = st.sidebar.multiselect(label="Highlight Residues",options=list(range(1,5000)))
 
 label_resi = st.sidebar.checkbox(label="Label Residues", value=True)
@@ -71,7 +72,7 @@ def get_3dview(pdb):
 
     if label_resi:
         for hl_resi in hl_resi_list:
-            xyzview.addResLabels({"chain": chain,"resi": hl_resi},
+            xyzview.addResLabels({"chain": hl_chain,"resi": hl_resi},
             {"backgroundColor": "lightgray","fontColor": "black","backgroundOpacity": 0.5})
     return xyzview
 
