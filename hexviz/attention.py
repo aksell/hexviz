@@ -1,6 +1,5 @@
-from enum import Enum
 from io import StringIO
-from typing import List, Tuple
+from typing import List, Optional
 from urllib import request
 
 import streamlit as st
@@ -21,20 +20,27 @@ def get_structure(pdb_code: str) -> Structure:
     structure = parser.get_structure(pdb_code, file)
     return structure
 
-def get_sequences(structure: Structure) -> List[str]:
+def get_chains(structure: Structure) -> List[str]:
     """
-    Get list of sequences with residues on a single letter format
+    Get list of chains in a structure
+    """
+    chains = []
+    for model in structure:
+        for chain in model.get_chains():
+            chains.append(chain.id)
+    return chains
+
+def get_sequence(chain) -> str:
+    """
+    Get sequence from a chain
 
     Residues not in the standard 20 amino acids are replaced with X
     """
-    sequences = []
-    for seq in structure.get_chains():
-        residues = [residue.get_resname() for residue in seq.get_residues()]
-        # TODO ask if using protein_letters_3to1_extended makes sense
-        residues_single_letter = map(lambda x: Polypeptide.protein_letters_3to1.get(x, "X"), residues)
+    residues = [residue.get_resname() for residue in chain.get_residues()]
+    # TODO ask if using protein_letters_3to1_extended makes sense
+    residues_single_letter = map(lambda x: Polypeptide.protein_letters_3to1.get(x, "X"), residues)
 
-        sequences.append("".join(list(residues_single_letter)))
-    return sequences
+    return "".join(list(residues_single_letter))
 
 @st.cache
 def get_attention(
@@ -100,17 +106,19 @@ def unidirectional_avg_filtered(attention, layer, head, threshold):
     return unidirectional_avg_for_head
  
 @st.cache
-def get_attention_pairs(pdb_code: str, layer: int, head: int, threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT):
-    # fetch structure
+def get_attention_pairs(pdb_code: str, layer: int, head: int, chain_ids: Optional[str] = None ,threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT):
     structure = get_structure(pdb_code=pdb_code)
-    # Get list of sequences
-    sequences = get_sequences(structure)
+
+    if chain_ids:
+        chains = [ch for ch in structure.get_chains() if ch.id in chain_ids]
+    else:
+        chains = list(structure.get_chains())
 
     attention_pairs = []
-    for i, sequence in enumerate(sequences):
+    for chain in chains:
+        sequence = get_sequence(chain)
         attention = get_attention(sequence=sequence, model_type=model_type)
         attention_unidirectional = unidirectional_avg_filtered(attention, layer, head, threshold)
-        chain = list(structure.get_chains())[i]
         for attn_value, res_1, res_2 in attention_unidirectional:
             try:
                 coord_1 = chain[res_1]["CA"].coord.tolist()
