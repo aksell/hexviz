@@ -49,7 +49,7 @@ def get_3dview(pdb):
     xyzview.setStyle({"cartoon": {"color": "spectrum"}})
     stmol.add_hover(xyzview, backgroundColor="black", fontColor="white")
     for att_weight, first, second in attention_pairs:
-        stmol.add_cylinder(xyzview, start=first, end=second, cylradius=att_weight*3, cylColor='red', dashed=False)
+        stmol.add_cylinder(xyzview, start=first, end=second, cylradius=att_weight, cylColor='red', dashed=False)
     return xyzview
 
 
