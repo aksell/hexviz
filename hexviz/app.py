@@ -21,6 +21,12 @@ models = [
 selected_model_name = st.selectbox("Select a model", [model.name.value for model in models], index=0)
 selected_model = next((model for model in models if model.name.value == selected_model_name), None)
 
+
+st.sidebar.markdown(
+    """
+    Select Protein 
+    ---
+    """)
 pdb_id = st.sidebar.text_input(
         label="PDB ID",
         value="4RW0",
@@ -29,13 +35,24 @@ structure = get_structure(pdb_id)
 chains = get_chains(structure)
 selected_chains = st.sidebar.multiselect(label="Chain(s)", options=chains, default=chains)
 
-hl_chain = st.sidebar.selectbox(label="Highlight Chain", options=selected_chains, index=0)
-hl_resi_list = st.sidebar.multiselect(label="Highlight Residues",options=list(range(1,5000)))
+
+st.sidebar.markdown(
+    """
+    Label residues
+    ---
+    """)
+
+hl_chain = st.sidebar.selectbox(label="Chain to label", options=selected_chains, index=0)
+hl_resi_list = st.sidebar.multiselect(label="Selected Residues",options=list(range(1,5000)))
 
 label_resi = st.sidebar.checkbox(label="Label Residues", value=True)
 
 
-st.sidebar.text("Attention parameters")
+st.sidebar.markdown(
+    """
+    Attention parameters
+    ---
+    """)
 min_attn = st.sidebar.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
 n_pairs = st.sidebar.number_input("Num attention pairs labeled", value=2, min_value=1, max_value=100)
 label_highest = st.sidebar.checkbox("Label highest attention pairs", value=True)
