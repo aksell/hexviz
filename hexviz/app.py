@@ -21,8 +21,6 @@ models = [
 selected_model_name = st.selectbox("Select a model", [model.name.value for model in models], index=0)
 selected_model = next((model for model in models if model.name.value == selected_model_name), None)
 
-st.sidebar.title("Settings")
-
 pdb_id = st.sidebar.text_input(
         label="PDB ID",
         value="4RW0",
@@ -39,15 +37,18 @@ label_resi = st.sidebar.checkbox(label="Label Residues", value=True)
 
 left, right = st.columns(2)
 with left:
-    layer_one = st.number_input("Layer", value=1, min_value=1, max_value=selected_model.layers)
+    layer_one = st.number_input("Layer", value=10, min_value=1, max_value=selected_model.layers)
     layer = layer_one - 1
 with right:
     head_one = st.number_input("Head", value=1, min_value=1, max_value=selected_model.heads)
     head = head_one - 1
 
 
-with st.expander("Configure parameters", expanded=False):
+with st.expander("Attention parameters", expanded=False):
     min_attn = st.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
+
+    # TODO add avg or max attention as params
+
     try:
         ec_class = structure.header["compound"]["1"]["ec"]
     except KeyError:
