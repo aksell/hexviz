@@ -26,7 +26,7 @@ st.sidebar.markdown(
     """)
 pdb_id = st.sidebar.text_input(
         label="PDB ID",
-        value="4RW0",
+        value="1AKE",
     )
 structure = get_structure(pdb_id)
 chains = get_chains(structure)
@@ -123,12 +123,10 @@ for att_weight, _ , _ , chain, first, second in top_n:
     res2 = chain_dict[chain][second]
     el = (att_weight, f"{res1.resname:3}{res1.id[1]:0>3} - {res2.resname:3}{res2.id[1]:0>3} ({chain})")
     data.append(el)
-    # st.write(f"Attention weight: {att_weight:.2f} | Residue pair: {structure.get_chain_id(chain)[first].get_resname()}-{structure.get_chain(chain)[first].full_id[3]}{chain.id}<-->{chain[second].get_resname()}")
 
 df = pd.DataFrame(data, columns=['Avg attention', 'Residue pair'])
 f"Top {n_pairs} attention pairs:"
 st.table(df)
-
 
 """
 More models will be added soon. The attention visualization is inspired by [provis](https://github.com/salesforce/provis#provis-attention-visualizer).

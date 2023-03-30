@@ -5,7 +5,7 @@ colorFrom: green
 colorTo: purple
 sdk: streamlit
 sdk_version: 1.17.0
-app_file: ./hexviz/app.py
+app_file: ./hexviz/Attention_Visualization.py
 pinned: false
 ---
 # hexviz
