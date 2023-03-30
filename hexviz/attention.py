@@ -85,21 +85,20 @@ def get_attention(
 
     return attentions
 
-def unidirectional_sum_filtered(attention, layer, head, threshold):
+def unidirectional_avg_filtered(attention, layer, head, threshold):
     num_layers, num_heads, seq_len, _ = attention.shape
     attention_head = attention[layer, head]
-    unidirectional_sum_for_head = []
+    unidirectional_avg_for_head = []
     for i in range(seq_len):
         for j in range(i, seq_len):
             # Attention matrices for BERT models are asymetric.
-            # Bidirectional attention is reduced to one value by adding the
-            # attention values
-            # TODO think... does this operation make sense?
+            # Bidirectional attention is represented by the average of the two values
             sum = attention_head[i, j].item() + attention_head[j, i].item()
-            if sum >= threshold:
-                unidirectional_sum_for_head.append((sum, i, j))
-    return unidirectional_sum_for_head
-
+            avg = sum / 2
+            if avg >= threshold:
+                unidirectional_avg_for_head.append((avg, i, j))
+    return unidirectional_avg_for_head
+ 
 @st.cache
 def get_attention_pairs(pdb_code: str, layer: int, head: int, threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT):
     # fetch structure
@@ -110,7 +109,7 @@ def get_attention_pairs(pdb_code: str, layer: int, head: int, threshold: int = 0
     attention_pairs = []
     for i, sequence in enumerate(sequences):
         attention = get_attention(sequence=sequence, model_type=model_type)
-        attention_unidirectional = unidirectional_sum_filtered(attention, layer, head, threshold)
+        attention_unidirectional = unidirectional_avg_filtered(attention, layer, head, threshold)
         chain = list(structure.get_chains())[i]
         for attn_value, res_1, res_2 in attention_unidirectional:
             try:

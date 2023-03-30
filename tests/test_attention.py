@@ -2,7 +2,7 @@ import torch
 from Bio.PDB.Structure import Structure
 
 from hexviz.attention import (ModelType, get_attention, get_sequences,
-                              get_structure, unidirectional_sum_filtered)
+                              get_structure, unidirectional_avg_filtered)
 
 
 def test_get_structure():
@@ -58,14 +58,14 @@ def test_get_attention_prot_bert():
     assert result is not None
     assert result.shape == torch.Size([30, 16, 3, 3])
 
-def test_get_unidirection_sum_filtered():
+def test_get_unidirection_avg_filtered():
     # 1 head, 1 layer, 4 residues long attention tensor
     attention= torch.tensor([[[[1, 2, 3, 4],
                                [2, 5, 6, 7],
                                [3, 6, 8, 9],
                                [4, 7, 9, 11]]]], dtype=torch.float32)
 
-    result = unidirectional_sum_filtered(attention, 0, 0, 0)
+    result = unidirectional_avg_filtered(attention, 0, 0, 0)
 
     assert result is not None
     assert len(result) == 10
@@ -74,6 +74,6 @@ def test_get_unidirection_sum_filtered():
                                [2, 5, 6],
                                [4, 7, 91]]]], dtype=torch.float32)
 
-    result = unidirectional_sum_filtered(attention, 0, 0, 0)
+    result = unidirectional_avg_filtered(attention, 0, 0, 0)
 
     assert len(result) == 6
