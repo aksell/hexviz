@@ -6,7 +6,7 @@ from hexviz.attention import (ModelType, get_attention, get_sequences,
 
 
 def test_get_structure():
-    pdb_id = "1AKE"
+    pdb_id = "2I62"
     structure = get_structure(pdb_id)
 
     assert structure is not None
