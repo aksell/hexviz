@@ -7,8 +7,7 @@ import streamlit as st
 import torch
 from Bio.PDB import PDBParser, Polypeptide, Structure
 
-from hexviz.models import (ModelType, get_prot_bert, get_protgpt2, get_protT5,
-                           get_tape_bert, get_zymctrl)
+from hexviz.models import ModelType, get_prot_bert, get_tape_bert, get_zymctrl
 
 
 def get_structure(pdb_code: str) -> Structure:
@@ -71,20 +70,6 @@ def get_attention(
         attention_stacked = torch.stack([attention for attention in attention_squeezed])
         attentions = attention_stacked
 
-    elif model_type == ModelType.ProtGPT2:
-        tokenizer, model = get_protgpt2()
-        input_ids = tokenizer.encode(input, return_tensors='pt').to(device)
-        with torch.no_grad():
-            outputs = model(inputs, attention_mask=attention_mask, output_attentions=True)
-            attentions = outputs.attentions
-
-        # torch.Size([1, n_heads, n_res, n_res]) -> torch.Size([n_heads, n_res, n_res])
-        attention_squeezed = [torch.squeeze(attention) for attention in attentions]
-        # ([n_heads, n_res, n_res]*n_layers) -> [n_layers, n_heads, n_res, n_res]
-        attention_stacked = torch.stack([attention for attention in attention_squeezed])
-        attentions = attention_stacked
-        # TODO extend attentions to be per token, not per word piece
-        # simplest way to draw attention for multi residue token models for now
     elif model_type == ModelType.PROT_BERT:
         tokenizer, model = get_prot_bert()
         token_idxs = tokenizer.encode(sequence)
@@ -95,19 +80,6 @@ def get_attention(
         attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
-    elif model_type == ModelType.PROT_T5:
-        # Introduce white-space between all amino acids
-        sequence = " ".join(sequence)
-        # tokenize sequences and pad up to the longest sequence in the batch
-        ids = tokenizer.encode_plus(sequence, add_special_tokens=True, padding="longest")
-
-        input_ids = torch.tensor(ids['input_ids']).to(device)
-        attention_mask = torch.tensor(ids['attention_mask']).to(device)
-
-        with torch.no_grad():
-            attns = model(input_ids=input_ids,attention_mask=attention_mask)[-1]
-
-        tokenizer, model = get_protT5()
     else:
         raise ValueError(f"Model {model_type} not supported")
 
