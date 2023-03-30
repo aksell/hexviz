@@ -6,11 +6,11 @@ from urllib import request
 import streamlit as st
 import torch
 from Bio.PDB import PDBParser, Polypeptide, Structure
-from models import (ModelType, get_protgpt2, get_protT5, get_tape_bert,
-                    get_zymctrl)
+
+from hexviz.models import (ModelType, get_prot_bert, get_protgpt2, get_protT5,
+                           get_tape_bert, get_zymctrl)
 
 
-@st.cache
 def get_structure(pdb_code: str) -> Structure:
     """
     Get structure from PDB
@@ -83,6 +83,17 @@ def get_attention(
         # ([n_heads, n_res, n_res]*n_layers) -> [n_layers, n_heads, n_res, n_res]
         attention_stacked = torch.stack([attention for attention in attention_squeezed])
         attentions = attention_stacked
+        # TODO extend attentions to be per token, not per word piece
+        # simplest way to draw attention for multi residue token models for now
+    elif model_type == ModelType.PROT_BERT:
+        tokenizer, model = get_prot_bert()
+        token_idxs = tokenizer.encode(sequence)
+        inputs = torch.tensor(token_idxs).unsqueeze(0)
+        with torch.no_grad():
+            attentions = model(inputs)[-1]
+            # Remove attention from <CLS> (first) and <SEP> (last) token
+        attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
+        attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     elif model_type == ModelType.PROT_T5:
         # Introduce white-space between all amino acids

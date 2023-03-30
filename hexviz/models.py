@@ -4,8 +4,8 @@ from typing import Tuple
 import streamlit as st
 import torch
 from tape import ProteinBertModel, TAPETokenizer
-from transformers import (AutoTokenizer, GPT2LMHeadModel, T5EncoderModel,
-                          T5Tokenizer)
+from transformers import (AutoTokenizer, BertForMaskedLM, BertTokenizer,
+                          GPT2LMHeadModel, T5EncoderModel, T5Tokenizer)
 
 
 class ModelType(str, Enum):
@@ -13,6 +13,7 @@ class ModelType(str, Enum):
     PROT_T5 = "prot_t5_xl_half_uniref50-enc"
     ZymCTRL = "ZymCTRL"
     ProtGPT2 = "ProtGPT2"
+    PROT_BERT = "ProtBert"
 
 
 class Model:
@@ -40,6 +41,12 @@ def get_protT5() -> Tuple[T5Tokenizer, T5EncoderModel]:
 def get_tape_bert() -> Tuple[TAPETokenizer, ProteinBertModel]:
     tokenizer = TAPETokenizer()
     model = ProteinBertModel.from_pretrained('bert-base', output_attentions=True)
+    return tokenizer, model
+
+@st.cache
+def get_prot_bert() -> Tuple[BertTokenizer, BertForMaskedLM]:
+    tokenizer = BertTokenizer.from_pretrained("Rostlab/prot_bert", do_lower_case=False )
+    model = BertForMaskedLM.from_pretrained("Rostlab/prot_bert")
     return tokenizer, model
 
 @st.cache

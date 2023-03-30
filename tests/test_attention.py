@@ -51,6 +51,13 @@ def test_get_attention_tape():
     assert result is not None
     assert result.shape == torch.Size([12,12,13,13])
 
+def test_get_attention_prot_bert():
+
+    result = get_attention("GGG", model_type=ModelType.PROT_BERT)
+
+    assert result is not None
+    assert result.shape == torch.Size([30, 16, 3, 3])
+
 def test_get_unidirection_sum_filtered():
     # 1 head, 1 layer, 4 residues long attention tensor
     attention= torch.tensor([[[[1, 2, 3, 4],
