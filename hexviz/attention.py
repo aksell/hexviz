@@ -89,7 +89,8 @@ def get_attention(
     else:
         raise ValueError(f"Model {model_type} not supported")
 
-    return attentions
+    # Transfer to CPU to avoid issues with streamlit caching
+    return attentions.cpu()
 
 def unidirectional_avg_filtered(attention, layer, head, threshold):
     num_layers, num_heads, seq_len, _ = attention.shape
