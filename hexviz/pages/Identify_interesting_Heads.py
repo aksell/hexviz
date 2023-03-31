@@ -32,11 +32,18 @@ slice_end = st.sidebar.number_input(f"Section end(1-{l})",value=50, min_value=1,
 truncated_sequence = sequence[slice_start-1:slice_end]
 
 
+layer_range = st.sidebar.slider("Heads", min_value=1, max_value=selected_model.layers, value=(1, selected_model.layers), step=1)
+head_range = st.sidebar.slider("Layers", min_value=1, max_value=selected_model.heads, value=(1, selected_model.heads), step=1)
+step_size = st.sidebar.number_input("Step size", value=2, min_value=1, max_value=selected_model.layers)
+layer_sequence = list(range(layer_range[0]-1, layer_range[1], step_size))
+head_sequence = list(range(head_range[0]-1, head_range[1], step_size))
+
+
 st.markdown(f"Each tile is a heatmap of attention for a section of {pdb_id}(A) from residue {slice_start} to {slice_end}. Adjust the section length and starting point in the sidebar.")
 
 # TODO: Decide if you should get attention for the full sequence or just the truncated sequence
 # Attention values will change depending on what we do.
 attention = get_attention(sequence=truncated_sequence, model_type=selected_model.name)
 
-fig = plot_tiled_heatmap(attention, layer_count=selected_model.layers, head_count=selected_model.heads)
+fig = plot_tiled_heatmap(attention, layer_sequence=layer_sequence, head_sequence=head_sequence)
 st.pyplot(fig)
