@@ -19,7 +19,7 @@ poetry install
 poetry run streamlit run hexviz/streamlit/Attention_On_Structure.py
 ```
 
-## Export dependcies from poetry
+## Export dependecies from poetry
 Spaces [require](https://huggingface.co/docs/hub/spaces-dependencies#adding-your-own-dependencies) dependencies in a `requirements.txt` file. Export depencies from poetry's `pyproject.toml` file with:
 ```shell
 poetry export -f requirements.txt --output requirements.txt --without-hashes
