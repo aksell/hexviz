@@ -64,7 +64,7 @@ with left:
     selected_model_name = st.selectbox("Select a model", [model.name.value for model in models], index=0)
     selected_model = next((model for model in models if model.name.value == selected_model_name), None)
 with mid:
-    layer_one = st.number_input("Layer", value=10, min_value=1, max_value=selected_model.layers)
+    layer_one = st.number_input("Layer", value=5, min_value=1, max_value=selected_model.layers)
     layer = layer_one - 1
 with right:
     head_one = st.number_input("Head", value=1, min_value=1, max_value=selected_model.heads)
