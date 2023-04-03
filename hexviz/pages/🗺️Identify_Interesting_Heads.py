@@ -3,7 +3,7 @@ import streamlit as st
 from hexviz.attention import get_attention, get_sequence, get_structure
 from hexviz.models import Model, ModelType
 from hexviz.plot import plot_tiled_heatmap
-from hexviz.view import get_selecte_model_index
+from hexviz.view import select_model, select_pdb
 
 st.set_page_config(layout="wide")
 st.subheader("Find interesting heads and layers")
@@ -14,16 +14,9 @@ models = [
     Model(name=ModelType.ZymCTRL, layers=36, heads=16),
 ]
 
-selected_model_name = st.selectbox("Select a model", [model.name.value for model in models], index=get_selecte_model_index(models))
-st.session_state.selected_model_name = selected_model_name
-selected_model = next((model for model in models if model.name.value == selected_model_name), None)
+selected_model = select_model(models)
 
-pdb_id = st.sidebar.text_input(
-        label="PDB ID",
-        value=st.session_state.get("pdb_id", "2FZ5"),
-    )
-st.session_state.pdb_id = pdb_id
-
+pdb_id = select_pdb()
 
 structure = get_structure(pdb_id)
 
