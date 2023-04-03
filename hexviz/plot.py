@@ -20,9 +20,12 @@ def plot_tiled_heatmap(tensor, layer_sequence: List[int], head_sequence: List[in
             if i == 0:
                 axes[i, j].set_title(f'Head {head_sequence[j] + 1}', fontsize=10, y=1.05)
 
-    # Add layer labels on the right Y-axis
-    for i in range(num_layers):
-        fig.text(0.98, (num_layers - i - 1) / num_layers + 0.025, f'Layer {layer_sequence[i]+1}', fontsize=10, rotation=0, ha='right', va='center')
+    # Calculate the row label offset based on the number of columns
+    offset = 0.02 + (12 - num_heads) * 0.0015
+    for i, ax_row in enumerate(axes):
+        row_label = f"{layer_sequence[i]+1}"
+        row_pos = ax_row[num_heads-1].get_position()
+        fig.text(row_pos.x1+offset, (row_pos.y1+row_pos.y0)/2, row_label, va='center')
 
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
     return fig
