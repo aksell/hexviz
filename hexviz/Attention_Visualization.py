@@ -58,7 +58,6 @@ label_highest = st.sidebar.checkbox("Label highest attention pairs", value=True)
 
 
 
-
 left, mid, right = st.columns(3)
 with left:
     selected_model_name = st.selectbox("Select a model", [model.name.value for model in models], index=0)
@@ -69,7 +68,6 @@ with mid:
 with right:
     head_one = st.number_input("Head", value=1, min_value=1, max_value=selected_model.heads)
     head = head_one - 1
-
 
 if selected_model.name == ModelType.ZymCTRL:
     try:
