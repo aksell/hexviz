@@ -23,9 +23,17 @@ pdb_id = st.sidebar.text_input(
 
 
 structure = get_structure(pdb_id)
-chains = list(structure.get_chains())
 
-sequence = get_sequence(chains[0])
+chains = list(structure.get_chains())
+chain_ids = [chain.id for chain in chains]
+chain_selection = st.sidebar.selectbox(
+    label="Select Chain",
+    options=chain_ids,
+)
+
+selected_chain = next(chain for chain in chains if chain.id == chain_selection)
+sequence = get_sequence(selected_chain)
+
 l = len(sequence)
 st.sidebar.markdown("Sequence segment to plot")
 slice_start, slice_end = st.sidebar.slider("Sequence", min_value=1, max_value=l, value=(1, 50), step=1)
@@ -40,7 +48,7 @@ layer_sequence = list(range(layer_range[0]-1, layer_range[1], step_size))
 head_sequence = list(range(head_range[0]-1, head_range[1], step_size))
 
 
-st.markdown(f"Each tile is a heatmap of attention for a section of {pdb_id}(A) from residue {slice_start} to {slice_end}. Adjust the section length and starting point in the sidebar.")
+st.markdown(f"Each tile is a heatmap of attention for a section of {pdb_id}({chain_selection}) from residue {slice_start} to {slice_end}. Adjust the section length and starting point in the sidebar.")
 
 # TODO: Decide if you should get attention for the full sequence or just the truncated sequence
 # Attention values will change depending on what we do.
