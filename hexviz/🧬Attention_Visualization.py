@@ -22,7 +22,7 @@ st.sidebar.markdown(
     """)
 pdb_id = st.sidebar.text_input(
         label="PDB ID",
-        value="1AKE",
+        value="2FZ5",
     )
 structure = get_structure(pdb_id)
 chains = get_chains(structure)
