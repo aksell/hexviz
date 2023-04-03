@@ -27,14 +27,15 @@ chains = list(structure.get_chains())
 
 sequence = get_sequence(chains[0])
 l = len(sequence)
-slice_start= st.sidebar.number_input(f"Section start(1-{l})",value=1, min_value=1, max_value=l)
-slice_end = st.sidebar.number_input(f"Section end(1-{l})",value=50, min_value=1, max_value=l)
+st.sidebar.markdown("Sequence segment to plot")
+slice_start, slice_end = st.sidebar.slider("Sequence", min_value=1, max_value=l, value=(1, 50), step=1)
+# slice_start= st.sidebar.number_input(f"Section start(1-{l})",value=1, min_value=1, max_value=l)
+# slice_end = st.sidebar.number_input(f"Section end(1-{l})",value=50, min_value=1, max_value=l)
 truncated_sequence = sequence[slice_start-1:slice_end]
 
-
-layer_range = st.sidebar.slider("Heads", min_value=1, max_value=selected_model.layers, value=(1, selected_model.layers), step=1)
-head_range = st.sidebar.slider("Layers", min_value=1, max_value=selected_model.heads, value=(1, selected_model.heads), step=1)
-step_size = st.sidebar.number_input("Step size", value=2, min_value=1, max_value=selected_model.layers)
+head_range = st.sidebar.slider("Heads to plot", min_value=1, max_value=selected_model.heads, value=(1, selected_model.heads), step=1)
+layer_range = st.sidebar.slider("Layers to plot", min_value=1, max_value=selected_model.layers, value=(1, selected_model.layers), step=1)
+step_size = st.sidebar.number_input("Optional step size to skip heads", value=2, min_value=1, max_value=selected_model.layers)
 layer_sequence = list(range(layer_range[0]-1, layer_range[1], step_size))
 head_sequence = list(range(head_range[0]-1, head_range[1], step_size))
 

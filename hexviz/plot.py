@@ -7,10 +7,13 @@ def plot_tiled_heatmap(tensor, layer_sequence: List[int], head_sequence: List[in
     tensor = tensor[layer_sequence, :][:, head_sequence, :, :]  # Slice the tensor according to the provided sequences and sequence_count
     num_layers = len(layer_sequence)
     num_heads = len(head_sequence)
-    fig, axes = plt.subplots(num_layers, num_heads, figsize=(12, 12))
+
+    x_size = num_heads * 2
+    y_size = num_layers * 2
+    fig, axes = plt.subplots(num_layers, num_heads, figsize=(x_size, y_size))
     for i in range(num_layers):
         for j in range(num_heads):
-            axes[i, j].imshow(tensor[i, j].detach().numpy(), cmap='viridis', aspect='auto')
+            axes[i, j].imshow(tensor[i, j].detach().numpy(), cmap='viridis', aspect='equal')
             axes[i, j].axis('off')
 
             # Enumerate the axes
