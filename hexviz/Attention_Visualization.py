@@ -9,10 +9,6 @@ from hexviz.models import Model, ModelType
 
 st.title("Attention Visualization on proteins")
 
-"""
-Visualize attention weights on protein structures for the protein language models TAPE-BERT and ZymCTRL.
-Pick a PDB ID, layer and head to visualize attention.
-"""
 
 models = [
     Model(name=ModelType.TAPE_BERT, layers=12, heads=12),
@@ -69,6 +65,7 @@ with right:
     head_one = st.number_input("Head", value=1, min_value=1, max_value=selected_model.heads)
     head = head_one - 1
 
+
 if selected_model.name == ModelType.ZymCTRL:
     try:
         ec_class = structure.header["compound"]["1"]["ec"]
@@ -110,8 +107,14 @@ def get_3dview(pdb):
 
 xyzview = get_3dview(pdb_id)
 showmol(xyzview, height=500, width=800)
-st.markdown(f'PDB: [{pdb_id}](https://www.rcsb.org/structure/{pdb_id})', unsafe_allow_html=True)
 
+st.markdown(f"""
+Visualize attention weights from protein language models on protein structures.
+Currently attention weights for PDB: [{pdb_id}](https://www.rcsb.org/structure/{pdb_id}) from layer: {layer_one}, head: {head_one} above {min_attn} from {selected_model.name.value}
+are visualized as red bars. The highest {n_pairs} attention pairs are labeled.
+Visualize attention weights on protein structures for the protein language models TAPE-BERT and ZymCTRL.
+Pick a PDB ID, layer and head to visualize attention.
+""", unsafe_allow_html=True)
 
 chain_dict = {f"{chain.id}": chain for chain in list(structure.get_chains())}
 data = []
@@ -122,9 +125,12 @@ for att_weight, _ , _ , chain, first, second in top_n:
     data.append(el)
 
 df = pd.DataFrame(data, columns=['Avg attention', 'Residue pair'])
-f"Top {n_pairs} attention pairs:"
+st.markdown(f"The {n_pairs} residue pairs with the highest average attention weights are labeled in the visualization and listed below:")
 st.table(df)
 
+st.markdown("""Clik in to the [Identify Interesting heads](#Identify-Interesting-heads) page to get an overview of attention
+            patterns across all layers and heads
+            to help you find heads with interesting attention patterns to study here.""")
 """
-More models will be added soon. The attention visualization is inspired by [provis](https://github.com/salesforce/provis#provis-attention-visualizer).
+The attention visualization is inspired by [provis](https://github.com/salesforce/provis#provis-attention-visualizer).
 """
