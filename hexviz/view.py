@@ -25,8 +25,12 @@ def select_pdb():
         Select Protein 
         ---
         """)
+    stored_pdb = st.session_state.get("pdb_id", None)
     pdb_id = st.sidebar.text_input(
             label="PDB ID",
-            value=st.session_state.get("pdb_id", "2FZ5"))
+            value=stored_pdb or "2FZ5")
+    if pdb_id != stored_pdb:
+        st.session_state.selected_chains = None
+        st.session_state.selected_chain_index = 0
     st.session_state.pdb_id = pdb_id
     return pdb_id
