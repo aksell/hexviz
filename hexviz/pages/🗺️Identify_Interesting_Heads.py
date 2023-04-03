@@ -3,6 +3,7 @@ import streamlit as st
 from hexviz.attention import get_attention, get_sequence, get_structure
 from hexviz.models import Model, ModelType
 from hexviz.plot import plot_tiled_heatmap
+from hexviz.view import get_selecte_model_index
 
 st.set_page_config(layout="wide")
 st.subheader("Find interesting heads and layers")
@@ -13,13 +14,15 @@ models = [
     Model(name=ModelType.ZymCTRL, layers=36, heads=16),
 ]
 
-selected_model_name = st.sidebar.selectbox("Select a model", [model.name.value for model in models], index=0)
+selected_model_name = st.selectbox("Select a model", [model.name.value for model in models], index=get_selecte_model_index(models))
+st.session_state.selected_model_name = selected_model_name
 selected_model = next((model for model in models if model.name.value == selected_model_name), None)
 
 pdb_id = st.sidebar.text_input(
         label="PDB ID",
-        value="1AKE",
+        value=st.session_state.get("pdb_id", "2FZ5"),
     )
+st.session_state.pdb_id = pdb_id
 
 
 structure = get_structure(pdb_id)
@@ -29,7 +32,9 @@ chain_ids = [chain.id for chain in chains]
 chain_selection = st.sidebar.selectbox(
     label="Select Chain",
     options=chain_ids,
+    index=st.session_state.get("selected_chain_index", 0)
 )
+st.session_state.selected_chain_index = chain_ids.index(chain_selection)
 
 selected_chain = next(chain for chain in chains if chain.id == chain_selection)
 sequence = get_sequence(selected_chain)

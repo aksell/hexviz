@@ -6,6 +6,7 @@ from stmol import showmol
 
 from hexviz.attention import get_attention_pairs, get_chains, get_structure
 from hexviz.models import Model, ModelType
+from hexviz.view import get_selecte_model_index
 
 st.title("Attention Visualization on proteins")
 
@@ -22,11 +23,13 @@ st.sidebar.markdown(
     """)
 pdb_id = st.sidebar.text_input(
         label="PDB ID",
-        value="2FZ5",
-    )
+        value=st.session_state.get("pdb_id", "2FZ5"))
+st.session_state.pdb_id = pdb_id
 structure = get_structure(pdb_id)
 chains = get_chains(structure)
-selected_chains = st.sidebar.multiselect(label="Chain(s)", options=chains, default=chains)
+
+selected_chains = st.sidebar.multiselect(label="Chain(s)", options=chains, default=st.session_state.get("selected_chains", None) or chains)
+st.session_state.selected_chains = selected_chains
 
 
 st.sidebar.markdown(
@@ -56,7 +59,8 @@ label_highest = st.sidebar.checkbox("Label highest attention pairs", value=True)
 
 left, mid, right = st.columns(3)
 with left:
-    selected_model_name = st.selectbox("Select a model", [model.name.value for model in models], index=0)
+    selected_model_name = st.selectbox("Select a model", [model.name.value for model in models], index=get_selecte_model_index(models))
+    st.session_state.selected_model_name = selected_model_name
     selected_model = next((model for model in models if model.name.value == selected_model_name), None)
 with mid:
     layer_one = st.number_input("Layer", value=5, min_value=1, max_value=selected_model.layers)
