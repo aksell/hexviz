@@ -1,5 +1,10 @@
 import streamlit as st
 
+menu_items = {
+    "Get Help": "https://huggingface.co/spaces/aksell/hexviz/discussions/new", 
+    "Report a bug": "https://huggingface.co/spaces/aksell/hexviz/discussions/new", 
+    "About": "Created by [Aksel Lenes](https://github.com/aksell/) from Noelia Ferruz's group at the Institute of Molecular Biology of Barcelona. Read more at https://www.aiproteindesign.com/"
+    }
 
 def get_selecte_model_index(models):
     selected_model_name = st.session_state.get("selected_model_name", None)

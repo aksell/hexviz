@@ -3,9 +3,9 @@ import streamlit as st
 from hexviz.attention import get_attention, get_sequence, get_structure
 from hexviz.models import Model, ModelType
 from hexviz.plot import plot_tiled_heatmap
-from hexviz.view import select_model, select_pdb
+from hexviz.view import menu_items, select_model, select_pdb
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="wide", menu_items=menu_items)
 st.subheader("Find interesting heads and layers")
 
 
