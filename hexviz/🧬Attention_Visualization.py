@@ -26,18 +26,6 @@ st.session_state.selected_chains = selected_chains
 
 st.sidebar.markdown(
     """
-    Label residues
-    ---
-    """)
-
-hl_chain = st.sidebar.selectbox(label="Chain to label", options=selected_chains, index=0)
-hl_resi_list = st.sidebar.multiselect(label="Selected Residues",options=list(range(1,5000)))
-
-label_resi = st.sidebar.checkbox(label="Label Residues", value=True)
-
-
-st.sidebar.markdown(
-    """
     Attention parameters
     ---
     """)
@@ -47,6 +35,11 @@ label_highest = st.sidebar.checkbox("Label highest attention pairs", value=True)
 # TODO add avg or max attention as params
 
 
+with st.sidebar.expander("Label residues manually"):
+    hl_chain = st.selectbox(label="Chain to label", options=selected_chains, index=0)
+    hl_resi_list = st.multiselect(label="Selected Residues",options=list(range(1,5000)))
+
+    label_resi = st.checkbox(label="Label Residues", value=True)
 
 
 left, mid, right = st.columns(3)
