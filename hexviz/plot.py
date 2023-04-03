@@ -10,7 +10,7 @@ def plot_tiled_heatmap(tensor, layer_sequence: List[int], head_sequence: List[in
 
     x_size = num_heads * 2
     y_size = num_layers * 2
-    fig, axes = plt.subplots(num_layers, num_heads, figsize=(x_size, y_size))
+    fig, axes = plt.subplots(num_layers, num_heads, figsize=(x_size, y_size), squeeze=False)
     for i in range(num_layers):
         for j in range(num_heads):
             axes[i, j].imshow(tensor[i, j].detach().numpy(), cmap='viridis', aspect='equal')
