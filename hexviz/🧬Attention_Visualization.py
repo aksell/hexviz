@@ -47,10 +47,12 @@ left, mid, right = st.columns(3)
 with left:
     selected_model = select_model(models)
 with mid:
-    layer_one = st.number_input("Layer", value=5, min_value=1, max_value=selected_model.layers)
+    layer_one = st.number_input("Layer",value=st.session_state.get("selected_layer", 5), min_value=1, max_value=selected_model.layers)
+    st.session_state["selected_layer"] = layer_one
     layer = layer_one - 1
 with right:
-    head_one = st.number_input("Head", value=1, min_value=1, max_value=selected_model.heads)
+    head_one = st.number_input("Head", value=st.session_state.get("selected_head", 1), min_value=1, max_value=selected_model.heads)
+    st.session_state["selected_head"] = head_one
     head = head_one - 1
 
 

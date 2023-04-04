@@ -28,6 +28,10 @@ def select_model(models):
             del st.session_state.plot_heads
         if "plot_layers" in st.session_state:
             del st.session_state.plot_layers
+        if "selected_head" in st.session_state:
+            del st.session_state.selected_head
+        if "selected_layer" in st.session_state:
+            del st.session_state.selected_layer
     select_model = next((model for model in models if model.name.value == selected_model_name), None)
     return select_model
 
