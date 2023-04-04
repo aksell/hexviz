@@ -97,8 +97,7 @@ def get_3dview(pdb):
             xyzview.addResLabels({"chain": chain, "resi": res},
             {"backgroundColor": "lightgray", "fontColor": "black", "backgroundOpacity": 0.5})
             if sidechain_highest:
-                # What color to use?
-                xyzview.addStyle({"chain": chain, "resi": res, "elem": "C"},{"stick": {"radius": 0.2}})
+                xyzview.addStyle({"chain": chain, "resi": res},{"stick": {"radius": 0.2}})
     return xyzview
 
 xyzview = get_3dview(pdb_id)
