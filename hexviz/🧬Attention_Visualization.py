@@ -31,8 +31,8 @@ st.sidebar.markdown(
     ---
     """)
 min_attn = st.sidebar.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
-n_pairs = st.sidebar.number_input("Num attention pairs labeled", value=2, min_value=1, max_value=100)
-label_highest = st.sidebar.checkbox("Label highest attention pairs", value=True)
+n_highest_resis = st.sidebar.number_input("Num highest attention resis to label", value=2, min_value=1, max_value=100)
+label_highest = st.sidebar.checkbox("Label highest attention residues", value=True)
 # TODO add avg or max attention as params
 
 
@@ -64,10 +64,9 @@ if selected_model.name == ModelType.ZymCTRL:
     if ec_class and selected_model.name == ModelType.ZymCTRL:
         ec_class = st.sidebar.text_input("Enzyme classification number fetched from PDB", ec_class)
 
-attention_pairs = get_attention_pairs(pdb_id, chain_ids=selected_chains, layer=layer, head=head, threshold=min_attn, model_type=selected_model.name)
+attention_pairs, top_residues = get_attention_pairs(pdb_id, chain_ids=selected_chains, layer=layer, head=head, threshold=min_attn, model_type=selected_model.name, top_n=n_highest_resis)
 
 sorted_by_attention = sorted(attention_pairs, key=lambda x: x[0], reverse=True) 
-top_n = sorted_by_attention[:n_pairs]
 
 def get_3dview(pdb):
     xyzview = py3Dmol.view(query=f"pdb:{pdb}")
@@ -93,11 +92,10 @@ def get_3dview(pdb):
             {"backgroundColor": "lightgray","fontColor": "black","backgroundOpacity": 0.5})
 
     if label_highest:
-        for _, _, _, chain, a, b in top_n:
-            xyzview.addResLabels({"chain": chain,"resi": a},
-            {"backgroundColor": "lightgray","fontColor": "black","backgroundOpacity": 0.5})
-            xyzview.addResLabels({"chain": chain,"resi": b},
-            {"backgroundColor": "lightgray","fontColor": "black","backgroundOpacity": 0.5})
+        for _, _, chain, res in top_residues:
+            xyzview.addResLabels({"chain": chain, "resi": res},
+            {"backgroundColor": "lightgray", "fontColor": "black", "backgroundOpacity": 0.5})
+
     return xyzview
 
 xyzview = get_3dview(pdb_id)
@@ -106,21 +104,20 @@ showmol(xyzview, height=500, width=800)
 st.markdown(f"""
 Visualize attention weights from protein language models on protein structures.
 Currently attention weights for PDB: [{pdb_id}](https://www.rcsb.org/structure/{pdb_id}) from layer: {layer_one}, head: {head_one} above {min_attn} from {selected_model.name.value}
-are visualized as red bars. The highest {n_pairs} attention pairs are labeled.
+are visualized as red bars. The {n_highest_resis} residues with the highest sum of attention are labeled.
 Visualize attention weights on protein structures for the protein language models TAPE-BERT and ZymCTRL.
 Pick a PDB ID, layer and head to visualize attention.
 """, unsafe_allow_html=True)
 
 chain_dict = {f"{chain.id}": chain for chain in list(structure.get_chains())}
 data = []
-for att_weight, _ , _ , chain, first, second in top_n:
-    res1 = chain_dict[chain][first]
-    res2 = chain_dict[chain][second]
-    el = (att_weight, f"{res1.resname:3}{res1.id[1]:0>3} - {res2.resname:3}{res2.id[1]:0>3} ({chain})")
+for att_weight, _ , chain, resi in top_residues:
+    res = chain_dict[chain][resi]
+    el = (att_weight, f"{res.resname:3}{res.id[1]:0>3}")
     data.append(el)
 
-df = pd.DataFrame(data, columns=['Avg attention', 'Residue pair'])
-st.markdown(f"The {n_pairs} residue pairs with the highest average attention weights are labeled in the visualization and listed below:")
+df = pd.DataFrame(data, columns=['Total attention (disregarding direction)', 'Residue'])
+st.markdown(f"The {n_highest_resis} residues with the highest attention sum are labeled in the visualization and listed below:")
 st.table(df)
 
 st.markdown("""Clik in to the [Identify Interesting heads](#Identify-Interesting-heads) page to get an overview of attention

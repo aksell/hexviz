@@ -107,7 +107,7 @@ def unidirectional_avg_filtered(attention, layer, head, threshold):
     return unidirectional_avg_for_head
  
 @st.cache
-def get_attention_pairs(pdb_code: str, layer: int, head: int, chain_ids: Optional[str] = None ,threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT):
+def get_attention_pairs(pdb_code: str, layer: int, head: int, chain_ids: Optional[str] = None ,threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT, top_n: int = 2):
     structure = get_structure(pdb_code=pdb_code)
 
     if chain_ids:
@@ -120,12 +120,26 @@ def get_attention_pairs(pdb_code: str, layer: int, head: int, chain_ids: Optiona
         sequence = get_sequence(chain)
         attention = get_attention(sequence=sequence, model_type=model_type)
         attention_unidirectional = unidirectional_avg_filtered(attention, layer, head, threshold)
+
+        # Store sum of attention in to a resiue (from the unidirectional attention) 
+        residue_attention = {}
         for attn_value, res_1, res_2 in attention_unidirectional:
             try:
                 coord_1 = chain[res_1]["CA"].coord.tolist()
                 coord_2 = chain[res_2]["CA"].coord.tolist()
             except KeyError:
                 continue
+
             attention_pairs.append((attn_value, coord_1, coord_2, chain.id, res_1, res_2))
+            residue_attention[res_1] = residue_attention.get(res_1, 0) + attn_value
+            residue_attention[res_2] = residue_attention.get(res_2, 0) + attn_value
         
-    return attention_pairs
+        top_n_residues = sorted(residue_attention.items(), key=lambda x: x[1], reverse=True)[:top_n]
+        
+        top_residues = []
+        for res, attn_sum in top_n_residues:
+            coord = chain[res]["CA"].coord.tolist()
+            top_residues.append((attn_sum, coord, chain.id, res))
+        
+    return attention_pairs, top_residues
+
