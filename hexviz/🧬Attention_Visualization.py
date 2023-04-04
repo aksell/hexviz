@@ -24,6 +24,9 @@ chains = get_chains(structure)
 selected_chains = st.sidebar.multiselect(label="Select Chain(s)", options=chains, default=st.session_state.get("selected_chains", None) or chains)
 st.session_state.selected_chains = selected_chains
 
+show_ligands = st.sidebar.checkbox("Show ligands", value=st.session_state.get("show_ligands", True))
+st.session_state.show_ligands = show_ligands
+
 
 st.sidebar.markdown(
     """
@@ -75,8 +78,9 @@ def get_3dview(pdb):
     stmol.add_hover(xyzview, backgroundColor="black", fontColor="white")
 
     # Show all ligands as stick (heteroatoms)
-    xyzview.addStyle({"hetflag": True},
-                        {"stick": {"radius": 0.2}})
+    if show_ligands:
+        xyzview.addStyle({"hetflag": True},
+                            {"stick": {"radius": 0.2}})
 
     hidden_chains = [x for x in chains if x not in selected_chains]
     for chain in hidden_chains:
