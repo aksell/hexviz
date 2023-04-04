@@ -33,6 +33,7 @@ st.sidebar.markdown(
 min_attn = st.sidebar.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
 n_highest_resis = st.sidebar.number_input("Num highest attention resis to label", value=2, min_value=1, max_value=100)
 label_highest = st.sidebar.checkbox("Label highest attention residues", value=True)
+sidechain_highest = st.sidebar.checkbox("Show sidechains", value=True)
 # TODO add avg or max attention as params
 
 
@@ -95,7 +96,9 @@ def get_3dview(pdb):
         for _, _, chain, res in top_residues:
             xyzview.addResLabels({"chain": chain, "resi": res},
             {"backgroundColor": "lightgray", "fontColor": "black", "backgroundOpacity": 0.5})
-
+            if sidechain_highest:
+                # What color to use?
+                xyzview.addStyle({"chain": chain, "resi": res, "elem": "C"},{"stick": {"radius": 0.2}})
     return xyzview
 
 xyzview = get_3dview(pdb_id)
