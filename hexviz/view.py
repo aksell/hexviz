@@ -57,15 +57,9 @@ def select_heads_and_layers(sidebar, model):
         ---
         """
     )
-    if "plot_heads" not in st.session_state:
-        "setting heads"
-        st.session_state.plot_heads = (1, model.heads//2)
-    if "plot_layers" not in st.session_state:
-        "setting layers"
-        st.session_state.plot_layers = (1, model.layers//2)
-    head_range = sidebar.slider("Heads to plot", min_value=1, max_value=model.heads, value=st.session_state.plot_heads, step=1)
+    head_range = sidebar.slider("Heads to plot", min_value=1, max_value=model.heads, value=st.session_state.get("plot_heads", (1, model.heads//2)), step=1)
     st.session_state.plot_heads = head_range
-    layer_range = sidebar.slider("Layers to plot", min_value=1, max_value=model.layers, value=st.session_state.plot_layers, step=1)
+    layer_range = sidebar.slider("Layers to plot", min_value=1, max_value=model.layers, value=st.session_state.get("plot_layers", (1, model.layers//2)), step=1)
     st.session_state.plot_layers = layer_range
 
     step_size = sidebar.number_input("Optional step size to skip heads and layers", value=1, min_value=1, max_value=model.layers)
@@ -76,8 +70,6 @@ def select_heads_and_layers(sidebar, model):
 
 def select_sequence_slice(sequence_length):
     st.sidebar.markdown("Sequence segment to plot")
-    if "sequence_slice" not in st.session_state:
-        st.session_state["sequence_slice"] = (1, min(50, sequence_length))
-    slice = st.sidebar.slider("Sequence", value=st.session_state.sequence_slice, min_value=1, max_value=sequence_length, step=1)
+    slice = st.sidebar.slider("Sequence", value=st.session_state.get("sequence_slice", (1, min(50, sequence_length))), min_value=1, max_value=sequence_length, step=1)
     st.session_state.sequence_slice = slice
     return slice
