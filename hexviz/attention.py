@@ -20,6 +20,16 @@ def get_structure(pdb_code: str) -> Structure:
     structure = parser.get_structure(pdb_code, file)
     return structure
 
+def get_pdb_file(pdb_code: str) -> Structure:
+    """
+    Get structure from PDB
+    """
+    pdb_url = f"https://files.rcsb.org/download/{pdb_code}.pdb"
+    pdb_data = request.urlopen(pdb_url).read().decode("utf-8")
+    file = StringIO(pdb_data)
+    return file
+
+
 def get_chains(structure: Structure) -> List[str]:
     """
     Get list of chains in a structure
@@ -107,9 +117,8 @@ def unidirectional_avg_filtered(attention, layer, head, threshold):
     return unidirectional_avg_for_head
  
 @st.cache
-def get_attention_pairs(pdb_code: str, layer: int, head: int, chain_ids: Optional[str] = None ,threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT, top_n: int = 2):
-    structure = get_structure(pdb_code=pdb_code)
-
+def get_attention_pairs(pdb_str: str, layer: int, head: int, chain_ids: Optional[str] = None ,threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT, top_n: int = 2):
+    structure = PDBParser().get_structure("pdb", StringIO(pdb_str))
     if chain_ids:
         chains = [ch for ch in structure.get_chains() if ch.id in chain_ids]
     else:

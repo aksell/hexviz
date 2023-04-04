@@ -1,12 +1,15 @@
+from io import StringIO
+
 import pandas as pd
 import py3Dmol
 import stmol
 import streamlit as st
+from Bio.PDB import PDBParser
 from stmol import showmol
 
-from hexviz.attention import get_attention_pairs, get_chains, get_structure
+from hexviz.attention import get_attention_pairs, get_chains
 from hexviz.models import Model, ModelType
-from hexviz.view import menu_items, select_model, select_pdb
+from hexviz.view import menu_items, select_model, select_pdb, select_protein
 
 st.set_page_config(layout="centered", menu_items=menu_items)
 st.title("Attention Visualization on proteins")
@@ -18,7 +21,10 @@ models = [
 ]
 
 pdb_id = select_pdb()
-structure = get_structure(pdb_id)
+with st.expander("Input sequence or upload PDB file"):
+    uploaded_file = st.file_uploader("Upload PDB", type=["pdb"])
+
+pdb_str, structure = select_protein(pdb_id, uploaded_file)
 chains = get_chains(structure)
 
 selected_chains = st.sidebar.multiselect(label="Select Chain(s)", options=chains, default=st.session_state.get("selected_chains", None) or chains)
@@ -68,12 +74,13 @@ if selected_model.name == ModelType.ZymCTRL:
     if ec_class and selected_model.name == ModelType.ZymCTRL:
         ec_class = st.sidebar.text_input("Enzyme classification number fetched from PDB", ec_class)
 
-attention_pairs, top_residues = get_attention_pairs(pdb_id, chain_ids=selected_chains, layer=layer, head=head, threshold=min_attn, model_type=selected_model.name, top_n=n_highest_resis)
+attention_pairs, top_residues = get_attention_pairs(pdb_str=pdb_str, chain_ids=selected_chains, layer=layer, head=head, threshold=min_attn, model_type=selected_model.name, top_n=n_highest_resis)
 
 sorted_by_attention = sorted(attention_pairs, key=lambda x: x[0], reverse=True) 
 
 def get_3dview(pdb):
-    xyzview = py3Dmol.view(query=f"pdb:{pdb}")
+    xyzview = py3Dmol.view()
+    xyzview.addModel(pdb_str, "pdb")
     xyzview.setStyle({"cartoon": {"color": "spectrum"}})
     stmol.add_hover(xyzview, backgroundColor="black", fontColor="white")
 
