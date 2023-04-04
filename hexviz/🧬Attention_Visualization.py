@@ -6,7 +6,7 @@ from stmol import showmol
 
 from hexviz.attention import get_attention_pairs, get_chains, get_structure
 from hexviz.models import Model, ModelType
-from hexviz.view import select_model, select_pdb, menu_items
+from hexviz.view import menu_items, select_model, select_pdb
 
 st.set_page_config(layout="centered", menu_items=menu_items)
 st.title("Attention Visualization on proteins")

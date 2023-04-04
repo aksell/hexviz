@@ -3,7 +3,8 @@ import streamlit as st
 from hexviz.attention import get_attention, get_sequence, get_structure
 from hexviz.models import Model, ModelType
 from hexviz.plot import plot_tiled_heatmap
-from hexviz.view import menu_items, select_model, select_pdb
+from hexviz.view import (menu_items, select_heads_and_layers, select_model,
+                         select_pdb)
 
 st.set_page_config(layout="wide", menu_items=menu_items)
 st.subheader("Find interesting heads and layers")
@@ -34,17 +35,15 @@ sequence = get_sequence(selected_chain)
 
 l = len(sequence)
 st.sidebar.markdown("Sequence segment to plot")
-slice_start, slice_end = st.sidebar.slider("Sequence", min_value=1, max_value=l, value=(1, 50), step=1)
+if "sequence-slice" not in st.session_state:
+    st.session_state["sequence-slice"] = (1, min(50, l))
+slice_start, slice_end = st.sidebar.slider("Sequence", key="sequence-slice", min_value=1, max_value=l, step=1)
 # slice_start= st.sidebar.number_input(f"Section start(1-{l})",value=1, min_value=1, max_value=l)
 # slice_end = st.sidebar.number_input(f"Section end(1-{l})",value=50, min_value=1, max_value=l)
 truncated_sequence = sequence[slice_start-1:slice_end]
 
-head_range = st.sidebar.slider("Heads to plot", min_value=1, max_value=selected_model.heads, value=(1, selected_model.heads//2), step=1)
-layer_range = st.sidebar.slider("Layers to plot", min_value=1, max_value=selected_model.layers, value=(1, selected_model.layers//2), step=1)
-step_size = st.sidebar.number_input("Optional step size to skip heads and layers", value=1, min_value=1, max_value=selected_model.layers)
-layer_sequence = list(range(layer_range[0]-1, layer_range[1], step_size))
-head_sequence = list(range(head_range[0]-1, head_range[1], step_size))
 
+layer_sequence, head_sequence = select_heads_and_layers(st.sidebar, selected_model)
 
 st.markdown(f"Each tile is a heatmap of attention for a section of {pdb_id}({chain_selection}) from residue {slice_start} to {slice_end}. Adjust the section length and starting point in the sidebar.")
 
