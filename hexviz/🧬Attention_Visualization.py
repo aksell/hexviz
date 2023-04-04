@@ -78,6 +78,10 @@ def get_3dview(pdb):
     hidden_chains = [x for x in chains if x not in selected_chains]
     for chain in hidden_chains:
         xyzview.setStyle({"chain": chain},{"cross":{"hidden":"true"}})
+    if len(selected_chains) == 1:
+        xyzview.zoomTo({'chain': f'{selected_chains[0]}'}) 
+    else:
+        xyzview.zoomTo()
 
     for att_weight, first, second, _, _, _ in attention_pairs:
         stmol.add_cylinder(xyzview, start=first, end=second, cylradius=att_weight, cylColor='red', dashed=False)
