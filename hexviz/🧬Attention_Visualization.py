@@ -74,10 +74,16 @@ def get_3dview(pdb):
     xyzview.setStyle({"cartoon": {"color": "spectrum"}})
     stmol.add_hover(xyzview, backgroundColor="black", fontColor="white")
 
+    # Show all ligands as stick (heteroatoms)
+    xyzview.addStyle({"hetflag": True},
+                        {"stick": {"radius": 0.2}})
 
     hidden_chains = [x for x in chains if x not in selected_chains]
     for chain in hidden_chains:
         xyzview.setStyle({"chain": chain},{"cross":{"hidden":"true"}})
+        # Hide ligands for chain too
+        xyzview.addStyle({"chain": chain, "hetflag": True},{"cross": {"hidden": "true"}})
+
     if len(selected_chains) == 1:
         xyzview.zoomTo({'chain': f'{selected_chains[0]}'}) 
     else:
@@ -85,9 +91,6 @@ def get_3dview(pdb):
 
     for att_weight, first, second, _, _, _ in attention_pairs:
         stmol.add_cylinder(xyzview, start=first, end=second, cylradius=att_weight, cylColor='red', dashed=False)
-
-    xyzview.addStyle({"hetflag": True},
-                        {"stick": {"radius": 0.2}})
 
     if label_resi:
         for hl_resi in hl_resi_list:
