@@ -86,8 +86,6 @@ def get_3dview(pdb):
     for att_weight, first, second, _, _, _ in attention_pairs:
         stmol.add_cylinder(xyzview, start=first, end=second, cylradius=att_weight, cylColor='red', dashed=False)
 
-    xyzview.addStyle({"elem": "C", "hetflag": True},
-                {"stick": {"color": "white", "radius": 0.2}})
     xyzview.addStyle({"hetflag": True},
                         {"stick": {"radius": 0.2}})
 
