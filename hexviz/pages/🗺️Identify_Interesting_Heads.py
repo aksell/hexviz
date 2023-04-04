@@ -4,7 +4,7 @@ from hexviz.attention import get_attention, get_sequence, get_structure
 from hexviz.models import Model, ModelType
 from hexviz.plot import plot_tiled_heatmap
 from hexviz.view import (menu_items, select_heads_and_layers, select_model,
-                         select_pdb)
+                         select_pdb, select_sequence_slice)
 
 st.set_page_config(layout="wide", menu_items=menu_items)
 st.subheader("Find interesting heads and layers")
@@ -34,12 +34,7 @@ selected_chain = next(chain for chain in chains if chain.id == chain_selection)
 sequence = get_sequence(selected_chain)
 
 l = len(sequence)
-st.sidebar.markdown("Sequence segment to plot")
-if "sequence-slice" not in st.session_state:
-    st.session_state["sequence-slice"] = (1, min(50, l))
-slice_start, slice_end = st.sidebar.slider("Sequence", key="sequence-slice", min_value=1, max_value=l, step=1)
-# slice_start= st.sidebar.number_input(f"Section start(1-{l})",value=1, min_value=1, max_value=l)
-# slice_end = st.sidebar.number_input(f"Section end(1-{l})",value=50, min_value=1, max_value=l)
+slice_start, slice_end = select_sequence_slice(l)
 truncated_sequence = sequence[slice_start-1:slice_end]
 
 

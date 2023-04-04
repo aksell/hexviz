@@ -41,9 +41,12 @@ def select_pdb():
     pdb_id = st.sidebar.text_input(
             label="PDB ID",
             value=stored_pdb or "2FZ5")
-    if pdb_id != stored_pdb:
+    pdb_changed = stored_pdb != pdb_id
+    if pdb_changed:
         st.session_state.selected_chains = None
         st.session_state.selected_chain_index = 0
+        if "sequence_slice" in st.session_state:
+            del st.session_state.sequence_slice
     st.session_state.pdb_id = pdb_id
     return pdb_id
 
@@ -70,3 +73,11 @@ def select_heads_and_layers(sidebar, model):
     head_sequence = list(range(head_range[0]-1, head_range[1], step_size))
 
     return layer_sequence, head_sequence
+
+def select_sequence_slice(sequence_length):
+    st.sidebar.markdown("Sequence segment to plot")
+    if "sequence_slice" not in st.session_state:
+        st.session_state["sequence_slice"] = (1, min(50, sequence_length))
+    slice = st.sidebar.slider("Sequence", value=st.session_state.sequence_slice, min_value=1, max_value=sequence_length, step=1)
+    st.session_state.sequence_slice = slice
+    return slice
