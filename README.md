@@ -6,7 +6,8 @@ colorTo: purple
 sdk: streamlit
 sdk_version: 1.17.0
 app_file: ./hexviz/🧬Attention_Visualization.py
-pinned: false
+pinned: true
+tags: ["protein language models", "attention analysis", "protein structure", "biology"]
 ---
 # hexviz
 Visualize attention pattern on 3D protein structures
