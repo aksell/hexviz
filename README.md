@@ -8,7 +8,11 @@ sdk_version: 1.17.0
 python_version: 3.10.5
 app_file: ./hexviz/🧬Attention_Visualization.py
 pinned: true
-tags: ["protein language models", "attention analysis", "protein structure", "biology"]
+tags:
+  - protein language models
+  - attention analysis
+  - protein structure
+  - biology
 ---
 # hexviz
 Visualize attention pattern on 3D protein structures
