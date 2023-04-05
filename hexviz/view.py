@@ -1,9 +1,10 @@
 from io import StringIO
 
+import requests
 import streamlit as st
 from Bio.PDB import PDBParser
 
-from hexviz.attention import get_pdb_file
+from hexviz.attention import get_pdb_file, get_pdb_from_seq
 
 menu_items = {
     "Get Help": "https://huggingface.co/spaces/aksell/hexviz/discussions/new", 
@@ -41,19 +42,16 @@ def select_model(models):
     return select_model
 
 def select_pdb():
-    st.sidebar.markdown(
-        """
-        Select Protein 
-        ---
-        """)
     stored_pdb = st.session_state.get("pdb_id", None)
-    pdb_id = st.sidebar.text_input(
-            label="PDB ID",
+    pdb_id = st.text_input(
+            label="1.PDB ID",
             value=stored_pdb or "2FZ5")
     pdb_changed = stored_pdb != pdb_id
     if pdb_changed:
-        st.session_state.selected_chains = None
-        st.session_state.selected_chain_index = 0
+        if "selected_chains" in st.session_state:
+            del st.session_state.selected_chains
+        if "selected_chain_index" in st.session_state:
+            del st.session_state.selected_chain_index
         if "sequence_slice" in st.session_state:
             del st.session_state.sequence_slice
         if "uploaded_pdb_str" in st.session_state:
@@ -61,25 +59,31 @@ def select_pdb():
     st.session_state.pdb_id = pdb_id
     return pdb_id
 
-def select_protein(pdb_code, uploaded_file):
+def select_protein(pdb_code, uploaded_file, input_sequence):
     # We get the pdb from 1 of 3 places:
     # 1. Cached pdb from session storage
     # 2. PDB file from uploaded file
     # 3. PDB file fetched based on the pdb_code input
     parser = PDBParser()
     if uploaded_file is not None:
-        if "pdb_str" in st.session_state:
-            del st.session_state.pdb_str
         pdb_str = uploaded_file.read().decode("utf-8")
         st.session_state["uploaded_pdb_str"] = pdb_str
-    if "uploaded_pdb_str" in st.session_state:
+        source = f"uploaded pdb file {uploaded_file.name}"
+    elif "uploaded_pdb_str" in st.session_state:
         pdb_str = st.session_state.uploaded_pdb_str
+        source = f"Uploaded file stored in cache"
+    elif input_sequence:
+        pdb_str = get_pdb_from_seq(str(input_sequence))
+        if "selected_chains" in st.session_state:
+            del st.session_state.selected_chains
+        source = f"Input sequence + ESM-fold"
     else:
         file = get_pdb_file(pdb_code)
         pdb_str = file.read()
+        source = f"PDB ID: {pdb_code}"
 
     structure = parser.get_structure(pdb_code, StringIO(pdb_str))
-    return pdb_str, structure
+    return pdb_str, structure, source
 
 def select_heads_and_layers(sidebar, model):
     sidebar.markdown(

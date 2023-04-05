@@ -4,7 +4,7 @@ from hexviz.attention import get_attention, get_sequence, get_structure
 from hexviz.models import Model, ModelType
 from hexviz.plot import plot_tiled_heatmap
 from hexviz.view import (menu_items, select_heads_and_layers, select_model,
-                         select_pdb, select_sequence_slice)
+                         select_pdb, select_protein, select_sequence_slice)
 
 st.set_page_config(layout="wide", menu_items=menu_items)
 st.subheader("Find interesting heads and layers")
@@ -15,9 +15,16 @@ models = [
     Model(name=ModelType.ZymCTRL, layers=36, heads=16),
 ]
 
+with st.expander("Input a PDB id, upload a PDB file or input a sequence"):
+    pdb_id = select_pdb()
+    uploaded_file = st.file_uploader("2.Upload PDB", type=["pdb"])
+    # TODO set max length of input sequence
+    input_sequence = st.text_area("3.Input sequence (Folded with ESMfold) Max 400 resis", "", max_chars=400)
+    pdb_str, structure, source = select_protein(pdb_id, uploaded_file, input_sequence)
+    st.write(f"Using: {source}")
+
 selected_model = select_model(models)
 
-pdb_id = select_pdb()
 
 structure = get_structure(pdb_id)
 

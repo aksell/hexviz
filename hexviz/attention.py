@@ -2,6 +2,7 @@ from io import StringIO
 from typing import List, Optional
 from urllib import request
 
+import requests
 import streamlit as st
 import torch
 from Bio.PDB import PDBParser, Polypeptide, Structure
@@ -29,6 +30,15 @@ def get_pdb_file(pdb_code: str) -> Structure:
     file = StringIO(pdb_data)
     return file
 
+@st.cache
+def get_pdb_from_seq(sequence: str) -> str:
+    """
+    Get structure from sequence
+    """
+    url = "https://api.esmatlas.com/foldSequence/v1/pdb/"
+    res = requests.post(url, data=sequence)
+    pdb_str = res.text
+    return pdb_str
 
 def get_chains(structure: Structure) -> List[str]:
     """
@@ -125,6 +135,7 @@ def get_attention_pairs(pdb_str: str, layer: int, head: int, chain_ids: Optional
         chains = list(structure.get_chains())
 
     attention_pairs = []
+    top_residues = []
     for chain in chains:
         sequence = get_sequence(chain)
         attention = get_attention(sequence=sequence, model_type=model_type)
@@ -145,7 +156,6 @@ def get_attention_pairs(pdb_str: str, layer: int, head: int, chain_ids: Optional
         
         top_n_residues = sorted(residue_attention.items(), key=lambda x: x[1], reverse=True)[:top_n]
         
-        top_residues = []
         for res, attn_sum in top_n_residues:
             coord = chain[res]["CA"].coord.tolist()
             top_residues.append((attn_sum, coord, chain.id, res))

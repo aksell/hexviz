@@ -20,11 +20,18 @@ models = [
     Model(name=ModelType.ZymCTRL, layers=36, heads=16),
 ]
 
-pdb_id = select_pdb()
-with st.expander("Input sequence or upload PDB file"):
-    uploaded_file = st.file_uploader("Upload PDB", type=["pdb"])
+with st.expander("Input a PDB id, upload a PDB file or input a sequence"):
+    pdb_id = select_pdb()
+    uploaded_file = st.file_uploader("2.Upload PDB", type=["pdb"])
+    input_sequence = st.text_area("3.Input sequence", "")
+    pdb_str, structure, source = select_protein(pdb_id, uploaded_file, input_sequence)
+    st.write(f"Visualizing: {source}")
 
-pdb_str, structure = select_protein(pdb_id, uploaded_file)
+st.sidebar.markdown(
+    """
+    Configure visualization
+    ---
+    """)
 chains = get_chains(structure)
 
 selected_chains = st.sidebar.multiselect(label="Select Chain(s)", options=chains, default=st.session_state.get("selected_chains", None) or chains)
