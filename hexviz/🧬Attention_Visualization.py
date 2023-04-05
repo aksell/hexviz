@@ -23,7 +23,7 @@ models = [
 with st.expander("Input a PDB id, upload a PDB file or input a sequence", expanded=True):
     pdb_id = select_pdb()
     uploaded_file = st.file_uploader("2.Upload PDB", type=["pdb"])
-    input_sequence = st.text_area("3.Input sequence", "")
+    input_sequence = st.text_area("3.Input sequence", "", max_chars=400)
     pdb_str, structure, source = select_protein(pdb_id, uploaded_file, input_sequence)
     st.write(f"Visualizing: {source}")
 
