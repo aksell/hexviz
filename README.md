@@ -5,6 +5,7 @@ colorFrom: green
 colorTo: purple
 sdk: streamlit
 sdk_version: 1.17.0
+python_version: 3.10.5
 app_file: ./hexviz/🧬Attention_Visualization.py
 pinned: true
 tags: ["protein language models", "attention analysis", "protein structure", "biology"]

@@ -1,5 +1,4 @@
 from io import StringIO
-from typing import List, Optional
 from urllib import request
 
 import requests
@@ -40,7 +39,7 @@ def get_pdb_from_seq(sequence: str) -> str:
     pdb_str = res.text
     return pdb_str
 
-def get_chains(structure: Structure) -> List[str]:
+def get_chains(structure: Structure) -> list[str]:
     """
     Get list of chains in a structure
     """
@@ -127,7 +126,7 @@ def unidirectional_avg_filtered(attention, layer, head, threshold):
     return unidirectional_avg_for_head
  
 @st.cache
-def get_attention_pairs(pdb_str: str, layer: int, head: int, chain_ids: Optional[str] = None ,threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT, top_n: int = 2):
+def get_attention_pairs(pdb_str: str, layer: int, head: int, chain_ids: str | None ,threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT, top_n: int = 2):
     structure = PDBParser().get_structure("pdb", StringIO(pdb_str))
     if chain_ids:
         chains = [ch for ch in structure.get_chains() if ch.id in chain_ids]
