@@ -125,6 +125,12 @@ def unidirectional_avg_filtered(attention, layer, head, threshold):
                 unidirectional_avg_for_head.append((avg, i, j))
     return unidirectional_avg_for_head
  
+
+# Passing the pdb_str here is a workaround for streamlit caching
+# where I need the input to be hashable and not changing
+# The ideal would be to pass in the structure directly, not parsing
+# Thist twice. If streamlit is upgaded to past 0.17 this can be
+# fixed.
 @st.cache
 def get_attention_pairs(pdb_str: str, layer: int, head: int, chain_ids: str | None ,threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT, top_n: int = 2):
     structure = PDBParser().get_structure("pdb", StringIO(pdb_str))
