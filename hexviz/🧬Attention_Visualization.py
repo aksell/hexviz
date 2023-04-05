@@ -1,13 +1,11 @@
-from io import StringIO
-
 import pandas as pd
 import py3Dmol
 import stmol
 import streamlit as st
-from Bio.PDB import PDBParser
 from stmol import showmol
 
-from hexviz.attention import get_attention_pairs, get_chains
+from hexviz.attention import (clean_and_validate_sequence, get_attention_pairs,
+                              get_chains)
 from hexviz.models import Model, ModelType
 from hexviz.view import menu_items, select_model, select_pdb, select_protein
 
@@ -24,7 +22,10 @@ with st.expander("Input a PDB id, upload a PDB file or input a sequence", expand
     pdb_id = select_pdb()
     uploaded_file = st.file_uploader("2.Upload PDB", type=["pdb"])
     input_sequence = st.text_area("3.Input sequence", "", max_chars=400)
-    pdb_str, structure, source = select_protein(pdb_id, uploaded_file, input_sequence)
+    sequence, error = clean_and_validate_sequence(input_sequence)
+    if error:
+        st.error(error)
+    pdb_str, structure, source = select_protein(pdb_id, uploaded_file, sequence)
     st.write(f"Visualizing: {source}")
 
 st.sidebar.markdown(

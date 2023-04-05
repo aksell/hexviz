@@ -61,6 +61,17 @@ def get_sequence(chain) -> str:
 
     return "".join(list(residues_single_letter))
 
+def clean_and_validate_sequence(sequence: str) -> tuple[str, str | None]:
+    cleaned_sequence = sequence.replace("\n", "").replace(" ", "").upper()
+    valid_residues = set(Polypeptide.protein_letters_3to1.values())
+    residues_in_sequence = set(cleaned_sequence)
+
+    illegal_residues = residues_in_sequence - valid_residues
+    if illegal_residues:
+        illegal_residues_str = ", ".join(illegal_residues)
+        error_message = f"Sequence contains illegal residues: {illegal_residues_str}"
+    return cleaned_sequence, error_message if illegal_residues else None
+
 @st.cache
 def get_attention(
     sequence: str, model_type: ModelType = ModelType.TAPE_BERT  
