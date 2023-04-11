@@ -3,7 +3,7 @@ from enum import Enum
 import streamlit as st
 import torch
 from tape import ProteinBertModel, TAPETokenizer
-from transformers import (AutoTokenizer, BertForMaskedLM, BertTokenizer,
+from transformers import (AutoTokenizer, BertModel, BertTokenizer,
                           GPT2LMHeadModel)
 
 
@@ -34,7 +34,8 @@ def get_zymctrl() -> tuple[AutoTokenizer, GPT2LMHeadModel]:
     return tokenizer, model
 
 @st.cache
-def get_prot_bert() -> tuple[BertTokenizer, BertForMaskedLM]:
+def get_prot_bert() -> tuple[BertTokenizer, BertModel]:
+    # TODO use cuda device here too?
     tokenizer = BertTokenizer.from_pretrained("Rostlab/prot_bert", do_lower_case=False )
-    model = BertForMaskedLM.from_pretrained("Rostlab/prot_bert")
+    model = BertModel.from_pretrained("Rostlab/prot_bert")
     return tokenizer, model

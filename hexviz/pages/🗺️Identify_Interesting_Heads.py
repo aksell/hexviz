@@ -16,6 +16,7 @@ for k, v in st.session_state.items():
 models = [
     Model(name=ModelType.TAPE_BERT, layers=12, heads=12),
     Model(name=ModelType.ZymCTRL, layers=36, heads=16),
+    Model(name=ModelType.PROT_BERT, layers=30, heads=16),
 ]
 
 with st.expander("Input a PDB id, upload a PDB file or input a sequence", expanded=True):

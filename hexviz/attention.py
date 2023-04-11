@@ -108,10 +108,11 @@ def get_attention(
 
     elif model_type == ModelType.PROT_BERT:
         tokenizer, model = get_prot_bert()
-        token_idxs = tokenizer.encode(sequence)
+        sequence_separated = " ".join(sequence)
+        token_idxs = tokenizer.encode(sequence_separated)
         inputs = torch.tensor(token_idxs).unsqueeze(0)
         with torch.no_grad():
-            attentions = model(inputs)[-1]
+            attentions = model(inputs, output_attentions=True)[-1]
             # Remove attention from <CLS> (first) and <SEP> (last) token
         attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
