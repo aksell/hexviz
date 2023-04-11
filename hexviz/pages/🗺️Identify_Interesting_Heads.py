@@ -10,6 +10,9 @@ st.set_page_config(layout="wide", menu_items=menu_items)
 st.subheader("Find interesting heads and layers")
 
 
+for k, v in st.session_state.items():
+    st.session_state[k] = v
+
 models = [
     Model(name=ModelType.TAPE_BERT, layers=12, heads=12),
     Model(name=ModelType.ZymCTRL, layers=36, heads=16),

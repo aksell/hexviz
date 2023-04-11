@@ -12,6 +12,8 @@ from hexviz.view import menu_items, select_model, select_pdb, select_protein
 st.set_page_config(layout="centered", menu_items=menu_items)
 st.title("Attention Visualization on proteins")
 
+for k, v in st.session_state.items():
+    st.session_state[k] = v
 
 models = [
     Model(name=ModelType.TAPE_BERT, layers=12, heads=12),
@@ -65,12 +67,14 @@ left, mid, right = st.columns(3)
 with left:
     selected_model = select_model(models)
 with mid:
-    layer_one = st.number_input("Layer",value=st.session_state.get("selected_layer", 5), min_value=1, max_value=selected_model.layers)
-    st.session_state["selected_layer"] = layer_one
+    if "selected_layer" not in st.session_state:
+        st.session_state["selected_layer"] = 5
+    layer_one = st.selectbox("Layer", options=[i for i in range(1, selected_model.layers+1)], key="selected_layer")
     layer = layer_one - 1
 with right:
-    head_one = st.number_input("Head", value=st.session_state.get("selected_head", 1), min_value=1, max_value=selected_model.heads)
-    st.session_state["selected_head"] = head_one
+    if "selected_head" not in st.session_state:
+        st.session_state["selected_head"] = 1
+    head_one = st.selectbox("Head", options=[i for i in range(1, selected_model.heads+1)], key="selected_head")
     head = head_one - 1
 
 
