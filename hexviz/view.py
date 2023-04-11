@@ -43,10 +43,13 @@ def select_model(models):
     return select_model
 
 def select_pdb():
+    if "pdb_id" not in st.session_state:
+        st.session_state.pdb_id = "2FZ5"
     stored_pdb = st.session_state.get("pdb_id", None)
     pdb_id = st.text_input(
-            label="1.PDB ID",
-            value=stored_pdb or "2FZ5")
+            label = "1.PDB ID",
+            key = "pdb_id"
+            )
     pdb_changed = stored_pdb != pdb_id
     if pdb_changed:
         if "selected_chains" in st.session_state:
@@ -57,7 +60,6 @@ def select_pdb():
             del st.session_state.sequence_slice
         if "uploaded_pdb_str" in st.session_state:
             del st.session_state.uploaded_pdb_str
-    st.session_state.pdb_id = pdb_id
     return pdb_id
 
 def select_protein(pdb_code, uploaded_file, input_sequence):
@@ -70,14 +72,14 @@ def select_protein(pdb_code, uploaded_file, input_sequence):
         pdb_str = uploaded_file.read().decode("utf-8")
         st.session_state["uploaded_pdb_str"] = pdb_str
         source = f"uploaded pdb file {uploaded_file.name}"
-    elif "uploaded_pdb_str" in st.session_state:
-        pdb_str = st.session_state.uploaded_pdb_str
-        source = f"Uploaded file stored in cache"
     elif input_sequence:
         pdb_str = get_pdb_from_seq(str(input_sequence))
         if "selected_chains" in st.session_state:
             del st.session_state.selected_chains
         source = f"Input sequence + ESM-fold"
+    elif "uploaded_pdb_str" in st.session_state:
+        pdb_str = st.session_state.uploaded_pdb_str
+        source = f"Uploaded file stored in cache"
     else:
         file = get_pdb_file(pdb_code)
         pdb_str = file.read()
