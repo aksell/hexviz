@@ -37,8 +37,9 @@ st.sidebar.markdown(
     """)
 chains = get_chains(structure)
 
-selected_chains = st.sidebar.multiselect(label="Select Chain(s)", options=chains, default=st.session_state.get("selected_chains", None) or chains)
-st.session_state.selected_chains = selected_chains
+if "selected_chains" not in st.session_state:
+    st.session_state.selected_chains = chains
+selected_chains = st.sidebar.multiselect(label="Select Chain(s)", options=chains, key="selected_chains")
 
 show_ligands = st.sidebar.checkbox("Show ligands", value=st.session_state.get("show_ligands", True))
 st.session_state.show_ligands = show_ligands
@@ -101,11 +102,13 @@ def get_3dview(pdb):
         xyzview.addStyle({"hetflag": True},
                             {"stick": {"radius": 0.2}})
 
-    hidden_chains = [x for x in chains if x not in selected_chains]
-    for chain in hidden_chains:
-        xyzview.setStyle({"chain": chain},{"cross":{"hidden":"true"}})
-        # Hide ligands for chain too
-        xyzview.addStyle({"chain": chain, "hetflag": True},{"cross": {"hidden": "true"}})
+    # If no chains are selected, show all chains
+    if selected_chains:
+        hidden_chains = [x for x in chains if x not in selected_chains]
+        for chain in hidden_chains:
+            xyzview.setStyle({"chain": chain},{"cross":{"hidden":"true"}})
+            # Hide ligands for chain too
+            xyzview.addStyle({"chain": chain, "hetflag": True},{"cross": {"hidden": "true"}})
 
     if len(selected_chains) == 1:
         xyzview.zoomTo({'chain': f'{selected_chains[0]}'}) 
