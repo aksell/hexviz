@@ -110,6 +110,7 @@ def select_heads_and_layers(sidebar, model):
 
 def select_sequence_slice(sequence_length):
     st.sidebar.markdown("Sequence segment to plot")
-    slice = st.sidebar.slider("Sequence", value=st.session_state.get("sequence_slice", (1, min(50, sequence_length))), min_value=1, max_value=sequence_length, step=1)
-    st.session_state.sequence_slice = slice
+    if "sequence_slice" not in st.session_state:
+        st.session_state.sequence_slice = (1, min(50, sequence_length))
+    slice = st.sidebar.slider("Sequence", key="sequence_slice", min_value=1, max_value=sequence_length, step=1)
     return slice
