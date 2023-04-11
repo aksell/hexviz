@@ -1,6 +1,5 @@
 from io import StringIO
 
-import requests
 import streamlit as st
 from Bio.PDB import PDBParser
 
@@ -19,47 +18,47 @@ def get_selecte_model_index(models):
     else:
         return next((i for i, model in enumerate(models) if model.name.value == selected_model_name), None)
 
-def select_model(models):
-    """
-    Select model, prefil selector with selected model from session storage
+def clear_model_state():
+    st.write("Model changed, clearing cache...")
+    print("Model changed, clearing cache...")
+    if "plot_heads" in st.session_state:
+        del st.session_state.plot_heads
+    if "plot_layers" in st.session_state:
+        del st.session_state.plot_layers
+    if "selected_head" in st.session_state:
+        del st.session_state.selected_head
+    if "selected_layer" in st.session_state:
+        del st.session_state.selected_layer
+    if "plot_layers" in st.session_state:
+        del st.session_state.plot_layers
+    if "plot_heads" in st.session_state:
+        del st.session_state.plot_heads
 
-    Saves the selected model in session storage.
-    """
+def select_model(models):
     if "selected_model_name" not in st.session_state:
         st.session_state.selected_model_name = models[0].name.value
-    stored_model = st.session_state.selected_model_name
-    selected_model_name = st.selectbox("Select model", [model.name.value for model in models], key="selected_model_name") #index=get_selecte_model_index(models))
-    model_changed = stored_model != selected_model_name
-    if model_changed:
-        if "plot_heads" in st.session_state:
-            del st.session_state.plot_heads
-        if "plot_layers" in st.session_state:
-            del st.session_state.plot_layers
-        if "selected_head" in st.session_state:
-            del st.session_state.selected_head
-        if "selected_layer" in st.session_state:
-            del st.session_state.selected_layer
+    selected_model_name = st.selectbox("Select model", [model.name.value for model in models], key="selected_model_name", on_change=clear_model_state)
     select_model = next((model for model in models if model.name.value == selected_model_name), None)
     return select_model
+
+def clear_pdb_state():
+    if "selected_chains" in st.session_state:
+        del st.session_state.selected_chains
+    if "selected_chain" in st.session_state:
+        del st.session_state.selected_chain
+    if "sequence_slice" in st.session_state:
+        del st.session_state.sequence_slice
+    if "uploaded_pdb_str" in st.session_state:
+        del st.session_state.uploaded_pdb_str
 
 def select_pdb():
     if "pdb_id" not in st.session_state:
         st.session_state.pdb_id = "2FZ5"
-    stored_pdb = st.session_state.get("pdb_id", None)
     pdb_id = st.text_input(
             label = "1.PDB ID",
-            key = "pdb_id"
+            key = "pdb_id",
+            on_change=clear_pdb_state
             )
-    pdb_changed = stored_pdb != pdb_id
-    if pdb_changed:
-        if "selected_chains" in st.session_state:
-            del st.session_state.selected_chains
-        if "selected_chain" in st.session_state:
-            del st.session_state.selected_chain
-        if "sequence_slice" in st.session_state:
-            del st.session_state.sequence_slice
-        if "uploaded_pdb_str" in st.session_state:
-            del st.session_state.uploaded_pdb_str
     return pdb_id
 
 def select_protein(pdb_code, uploaded_file, input_sequence):
