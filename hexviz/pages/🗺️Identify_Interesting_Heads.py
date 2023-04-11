@@ -21,7 +21,6 @@ models = [
 with st.expander("Input a PDB id, upload a PDB file or input a sequence"):
     pdb_id = select_pdb()
     uploaded_file = st.file_uploader("2.Upload PDB", type=["pdb"])
-    # TODO set max length of input sequence
     input_sequence = st.text_area("3.Input sequence (Folded with ESMfold) Max 400 resis", "", max_chars=400)
     pdb_str, structure, source = select_protein(pdb_id, uploaded_file, input_sequence)
     st.write(f"Using: {source}")
@@ -33,12 +32,13 @@ structure = get_structure(pdb_id)
 
 chains = list(structure.get_chains())
 chain_ids = [chain.id for chain in chains]
+if "selected_chain" not in st.session_state:
+    st.session_state.selected_chain = chain_ids[0]
 chain_selection = st.sidebar.selectbox(
-    label="Select Chain",
-    options=chain_ids,
-    index=st.session_state.get("selected_chain_index", 0)
+    label = "Select Chain",
+    options = chain_ids,
+    key = "selected_chain",
 )
-st.session_state.selected_chain_index = chain_ids.index(chain_selection)
 
 selected_chain = next(chain for chain in chains if chain.id == chain_selection)
 sequence = get_sequence(selected_chain)

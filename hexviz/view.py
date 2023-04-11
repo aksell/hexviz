@@ -51,8 +51,8 @@ def select_pdb():
     if pdb_changed:
         if "selected_chains" in st.session_state:
             del st.session_state.selected_chains
-        if "selected_chain_index" in st.session_state:
-            del st.session_state.selected_chain_index
+        if "selected_chain" in st.session_state:
+            del st.session_state.selected_chain
         if "sequence_slice" in st.session_state:
             del st.session_state.sequence_slice
         if "uploaded_pdb_str" in st.session_state:
@@ -93,12 +93,16 @@ def select_heads_and_layers(sidebar, model):
         ---
         """
     )
-    head_range = sidebar.slider("Heads to plot", min_value=1, max_value=model.heads, value=st.session_state.get("plot_heads", (1, model.heads//2)), step=1)
-    st.session_state.plot_heads = head_range
-    layer_range = sidebar.slider("Layers to plot", min_value=1, max_value=model.layers, value=st.session_state.get("plot_layers", (1, model.layers//2)), step=1)
-    st.session_state.plot_layers = layer_range
+    if "plot_heads" not in st.session_state:
+        st.session_state.plot_heads = (1, model.heads//2)
+    head_range = sidebar.slider("Heads to plot", min_value=1, max_value=model.heads, key="plot_heads", step=1)
+    if "plot_layers" not in st.session_state:
+        st.session_state.plot_layers = (1, model.layers//2)
+    layer_range = sidebar.slider("Layers to plot", min_value=1, max_value=model.layers, key="plot_layers", step=1)
 
-    step_size = sidebar.number_input("Optional step size to skip heads and layers", value=1, min_value=1, max_value=model.layers)
+    if "plot_step_size" not in st.session_state:
+        st.session_state.plot_step_size = 1
+    step_size = sidebar.number_input("Optional step size to skip heads and layers", key="plot_step_size", min_value=1, max_value=model.layers)
     layer_sequence = list(range(layer_range[0]-1, layer_range[1], step_size))
     head_sequence = list(range(head_range[0]-1, head_range[1], step_size))
 
