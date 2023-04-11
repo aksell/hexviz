@@ -25,9 +25,10 @@ def select_model(models):
 
     Saves the selected model in session storage.
     """
-    stored_model  = st.session_state.get("selected_model_name", None)
-    selected_model_name = st.selectbox("Select model", [model.name.value for model in models], index=get_selecte_model_index(models))
-    st.session_state.selected_model_name = selected_model_name
+    if "selected_model_name" not in st.session_state:
+        st.session_state.selected_model_name = models[0].name.value
+    stored_model = st.session_state.selected_model_name
+    selected_model_name = st.selectbox("Select model", [model.name.value for model in models], key="selected_model_name") #index=get_selecte_model_index(models))
     model_changed = stored_model != selected_model_name
     if model_changed:
         if "plot_heads" in st.session_state:
