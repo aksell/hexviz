@@ -18,7 +18,7 @@ models = [
     Model(name=ModelType.ZymCTRL, layers=36, heads=16),
 ]
 
-with st.expander("Input a PDB id, upload a PDB file or input a sequence"):
+with st.expander("Input a PDB id, upload a PDB file or input a sequence", expanded=True):
     pdb_id = select_pdb()
     uploaded_file = st.file_uploader("2.Upload PDB", type=["pdb"])
     input_sequence = st.text_area("3.Input sequence (Folded with ESMfold) Max 400 resis", "", max_chars=400)
