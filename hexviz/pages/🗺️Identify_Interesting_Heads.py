@@ -29,8 +29,6 @@ with st.expander("Input a PDB id, upload a PDB file or input a sequence", expand
 selected_model = select_model(models)
 
 
-structure = get_structure(pdb_id)
-
 chains = list(structure.get_chains())
 chain_ids = [chain.id for chain in chains]
 if "selected_chain" not in st.session_state:
@@ -51,7 +49,7 @@ truncated_sequence = sequence[slice_start-1:slice_end]
 
 layer_sequence, head_sequence = select_heads_and_layers(st.sidebar, selected_model)
 
-st.markdown(f"Each tile is a heatmap of attention for a section of {pdb_id}({chain_selection}) from residue {slice_start} to {slice_end}. Adjust the section length and starting point in the sidebar.")
+st.markdown(f"Each tile is a heatmap of attention for a section of the {source} chain ({chain_selection}) from residue {slice_start} to {slice_end}. Adjust the section length and starting point in the sidebar.")
 
 # TODO: Decide if you should get attention for the full sequence or just the truncated sequence
 # Attention values will change depending on what we do.
