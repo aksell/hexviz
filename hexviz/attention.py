@@ -6,7 +6,8 @@ import streamlit as st
 import torch
 from Bio.PDB import PDBParser, Polypeptide, Structure
 
-from hexviz.models import ModelType, get_prot_bert, get_tape_bert, get_zymctrl
+from hexviz.models import (ModelType, get_prot_bert, get_prot_bert_tokenizer,
+                           get_tape_bert, get_zymctrl)
 
 
 def get_structure(pdb_code: str) -> Structure:
@@ -107,7 +108,8 @@ def get_attention(
         attentions = attention_stacked
 
     elif model_type == ModelType.PROT_BERT:
-        tokenizer, model = get_prot_bert()
+        model = get_prot_bert()
+        tokenizer = get_prot_bert_tokenizer()
         sequence_separated = " ".join(sequence)
         token_idxs = tokenizer.encode(sequence_separated)
         inputs = torch.tensor(token_idxs).unsqueeze(0)
