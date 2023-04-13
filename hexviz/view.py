@@ -19,8 +19,6 @@ def get_selecte_model_index(models):
         return next((i for i, model in enumerate(models) if model.name.value == selected_model_name), None)
 
 def clear_model_state():
-    st.write("Model changed, clearing cache...")
-    print("Model changed, clearing cache...")
     if "plot_heads" in st.session_state:
         del st.session_state.plot_heads
     if "plot_layers" in st.session_state:
