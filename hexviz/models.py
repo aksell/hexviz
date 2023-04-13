@@ -3,6 +3,7 @@ from enum import Enum
 import streamlit as st
 import torch
 from tape import ProteinBertModel, TAPETokenizer
+from tokenizers import Tokenizer
 from transformers import (AutoTokenizer, BertModel, BertTokenizer,
                           GPT2LMHeadModel, GPT2TokenizerFast)
 
@@ -26,9 +27,9 @@ def get_tape_bert() -> tuple[TAPETokenizer, ProteinBertModel]:
     model = ProteinBertModel.from_pretrained('bert-base', output_attentions=True)
     return tokenizer, model
 
-@st.cache
+@st.cache(hash_funcs={Tokenizer: lambda _: None})
 def get_zymctrl() -> tuple[GPT2TokenizerFast, GPT2LMHeadModel]:
-    device = torch.device("cuda:0" if False and torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     tokenizer = AutoTokenizer.from_pretrained('nferruz/ZymCTRL')
     model = GPT2LMHeadModel.from_pretrained('nferruz/ZymCTRL').to(device)
     # here we return things that are on the GPU, streamlit can't cache that I think like it can't cache
