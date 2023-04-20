@@ -147,7 +147,7 @@ chain_dict = {f"{chain.id}": chain for chain in list(structure.get_chains())}
 data = []
 for att_weight, _ , chain, resi in top_residues:
     res = chain_dict[chain][resi]
-    el = (att_weight, f"{res.resname:3}{res.id[1]:0>3}")
+    el = (att_weight, f"{res.resname:3}{res.id[1]}")
     data.append(el)
 
 df = pd.DataFrame(data, columns=['Total attention (disregarding direction)', 'Residue'])
