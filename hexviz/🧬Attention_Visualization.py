@@ -139,7 +139,7 @@ st.markdown(f"""
 Visualize attention weights from protein language models on protein structures.
 Currently attention weights for PDB: [{pdb_id}](https://www.rcsb.org/structure/{pdb_id}) from layer: {layer_one}, head: {head_one} above {min_attn} from {selected_model.name.value}
 are visualized as red bars. The {n_highest_resis} residues with the highest sum of attention are labeled.
-Visualize attention weights on protein structures for the protein language models TAPE-BERT and ZymCTRL.
+Visualize attention weights on protein structures for the protein language models TAPE-BERT, ZymCTRL and ProtBERT.
 Pick a PDB ID, layer and head to visualize attention.
 """, unsafe_allow_html=True)
 
