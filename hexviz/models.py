@@ -36,13 +36,10 @@ def get_zymctrl() -> tuple[GPT2TokenizerFast, GPT2LMHeadModel]:
     model = GPT2LMHeadModel.from_pretrained('nferruz/ZymCTRL').to(device)
     return tokenizer, model
 
-@st.cache
-def get_prot_bert_tokenizer() -> BertTokenizer:
-    tokenizer = BertTokenizer.from_pretrained("Rostlab/prot_bert", do_lower_case=False )
-    return tokenizer
 
-@st.cache
-def get_prot_bert() -> BertModel:
+@st.cache(hash_funcs={BertTokenizer: lambda _: None})
+def get_prot_bert() -> tuple[BertTokenizer, BertModel]:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    tokenizer = BertTokenizer.from_pretrained("Rostlab/prot_bert", do_lower_case=False )
     model = BertModel.from_pretrained("Rostlab/prot_bert").to(device)
-    return model
+    return tokenizer, model
