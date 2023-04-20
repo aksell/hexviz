@@ -63,15 +63,26 @@ def get_sequence(chain) -> str:
     return "".join(list(residues_single_letter))
 
 def clean_and_validate_sequence(sequence: str) -> tuple[str, str | None]:
-    cleaned_sequence = sequence.replace("\n", "").replace(" ", "").upper()
+    lines = sequence.split("\n")
+    cleaned_sequence = "".join(line.upper() for line in lines if not line.startswith(">"))
+    cleaned_sequence = cleaned_sequence.replace(" ", "")
     valid_residues = set(Polypeptide.protein_letters_3to1.values())
     residues_in_sequence = set(cleaned_sequence)
+
+    # Check if the sequence exceeds the max allowed length
+    max_sequence_length = 400
+    if len(cleaned_sequence) > max_sequence_length:
+        error_message = f"Sequence exceeds the max allowed length of {max_sequence_length} characters"
+        return cleaned_sequence, error_message
 
     illegal_residues = residues_in_sequence - valid_residues
     if illegal_residues:
         illegal_residues_str = ", ".join(illegal_residues)
         error_message = f"Sequence contains illegal residues: {illegal_residues_str}"
-    return cleaned_sequence, error_message if illegal_residues else None
+        return cleaned_sequence, error_message
+    else:
+        return cleaned_sequence, None
+
 
 @st.cache
 def get_attention(
@@ -146,7 +157,7 @@ def unidirectional_avg_filtered(attention, layer, head, threshold):
 # Thist twice. If streamlit is upgaded to past 0.17 this can be
 # fixed.
 @st.cache
-def get_attention_pairs(pdb_str: str, layer: int, head: int, chain_ids: str | None ,threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT, top_n: int = 2):
+def get_attention_pairs(pdb_str: str, layer: int, head: int, chain_ids: list[str] | None ,threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT, top_n: int = 2):
     structure = PDBParser().get_structure("pdb", StringIO(pdb_str))
     if chain_ids:
         chains = [ch for ch in structure.get_chains() if ch.id in chain_ids]
