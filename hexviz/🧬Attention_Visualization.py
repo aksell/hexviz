@@ -4,8 +4,11 @@ import stmol
 import streamlit as st
 from stmol import showmol
 
-from hexviz.attention import (clean_and_validate_sequence, get_attention_pairs,
-                              get_chains)
+from hexviz.attention import (
+    clean_and_validate_sequence,
+    get_attention_pairs,
+    get_chains,
+)
 from hexviz.models import Model, ModelType
 from hexviz.view import menu_items, select_model, select_pdb, select_protein
 
@@ -21,10 +24,14 @@ models = [
     Model(name=ModelType.PROT_BERT, layers=30, heads=16),
 ]
 
-with st.expander("Input a PDB id, upload a PDB file or input a sequence", expanded=True):
+with st.expander(
+    "Input a PDB id, upload a PDB file or input a sequence", expanded=True
+):
     pdb_id = select_pdb()
     uploaded_file = st.file_uploader("2.Upload PDB", type=["pdb"])
-    input_sequence = st.text_area("3.Input sequence", "", key="input_sequence", max_chars=400)
+    input_sequence = st.text_area(
+        "3.Input sequence", "", key="input_sequence", max_chars=400
+    )
     sequence, error = clean_and_validate_sequence(input_sequence)
     if error:
         st.error(error)
@@ -35,14 +42,19 @@ st.sidebar.markdown(
     """
     Configure visualization
     ---
-    """)
+    """
+)
 chains = get_chains(structure)
 
 if "selected_chains" not in st.session_state:
     st.session_state.selected_chains = chains
-selected_chains = st.sidebar.multiselect(label="Select Chain(s)", options=chains, key="selected_chains")
+selected_chains = st.sidebar.multiselect(
+    label="Select Chain(s)", options=chains, key="selected_chains"
+)
 
-show_ligands = st.sidebar.checkbox("Show ligands", value=st.session_state.get("show_ligands", True))
+show_ligands = st.sidebar.checkbox(
+    "Show ligands", value=st.session_state.get("show_ligands", True)
+)
 st.session_state.show_ligands = show_ligands
 
 
@@ -50,9 +62,14 @@ st.sidebar.markdown(
     """
     Attention parameters
     ---
-    """)
-min_attn = st.sidebar.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
-n_highest_resis = st.sidebar.number_input("Num highest attention resis to label", value=2, min_value=1, max_value=100)
+    """
+)
+min_attn = st.sidebar.slider(
+    "Minimum attention", min_value=0.0, max_value=0.4, value=0.1
+)
+n_highest_resis = st.sidebar.number_input(
+    "Num highest attention resis to label", value=2, min_value=1, max_value=100
+)
 label_highest = st.sidebar.checkbox("Label highest attention residues", value=True)
 sidechain_highest = st.sidebar.checkbox("Show sidechains", value=True)
 # TODO add avg or max attention as params
@@ -60,7 +77,9 @@ sidechain_highest = st.sidebar.checkbox("Show sidechains", value=True)
 
 with st.sidebar.expander("Label residues manually"):
     hl_chain = st.selectbox(label="Chain to label", options=selected_chains, index=0)
-    hl_resi_list = st.multiselect(label="Selected Residues",options=list(range(1,5000)))
+    hl_resi_list = st.multiselect(
+        label="Selected Residues", options=list(range(1, 5000))
+    )
 
     label_resi = st.checkbox(label="Label Residues", value=True)
 
@@ -71,26 +90,46 @@ with left:
 with mid:
     if "selected_layer" not in st.session_state:
         st.session_state["selected_layer"] = 5
-    layer_one = st.selectbox("Layer", options=[i for i in range(1, selected_model.layers+1)], key="selected_layer")
+    layer_one = st.selectbox(
+        "Layer",
+        options=[i for i in range(1, selected_model.layers + 1)],
+        key="selected_layer",
+    )
     layer = layer_one - 1
 with right:
     if "selected_head" not in st.session_state:
         st.session_state["selected_head"] = 1
-    head_one = st.selectbox("Head", options=[i for i in range(1, selected_model.heads+1)], key="selected_head")
+    head_one = st.selectbox(
+        "Head",
+        options=[i for i in range(1, selected_model.heads + 1)],
+        key="selected_head",
+    )
     head = head_one - 1
 
-
+ec_class = ""
 if selected_model.name == ModelType.ZymCTRL:
     try:
         ec_class = structure.header["compound"]["1"]["ec"]
     except KeyError:
-        ec_class = None
-    if ec_class and selected_model.name == ModelType.ZymCTRL:
-        ec_class = st.sidebar.text_input("Enzyme classification number fetched from PDB", ec_class)
+        pass
+    ec_class = st.sidebar.text_input(
+        "Enzyme classification number fetched from PDB", ec_class
+    )
 
-attention_pairs, top_residues = get_attention_pairs(pdb_str=pdb_str, chain_ids=selected_chains, layer=layer, head=head, threshold=min_attn, model_type=selected_model.name, top_n=n_highest_resis)
 
-sorted_by_attention = sorted(attention_pairs, key=lambda x: x[0], reverse=True) 
+attention_pairs, top_residues = get_attention_pairs(
+    pdb_str=pdb_str,
+    chain_ids=selected_chains,
+    layer=layer,
+    head=head,
+    threshold=min_attn,
+    model_type=selected_model.name,
+    ec_class=ec_class,
+    top_n=n_highest_resis,
+)
+
+sorted_by_attention = sorted(attention_pairs, key=lambda x: x[0], reverse=True)
+
 
 def get_3dview(pdb):
     xyzview = py3Dmol.view()
@@ -100,37 +139,60 @@ def get_3dview(pdb):
 
     # Show all ligands as stick (heteroatoms)
     if show_ligands:
-        xyzview.addStyle({"hetflag": True},
-                            {"stick": {"radius": 0.2}})
+        xyzview.addStyle({"hetflag": True}, {"stick": {"radius": 0.2}})
 
     # If no chains are selected, show all chains
     if selected_chains:
         hidden_chains = [x for x in chains if x not in selected_chains]
         for chain in hidden_chains:
-            xyzview.setStyle({"chain": chain},{"cross":{"hidden":"true"}})
+            xyzview.setStyle({"chain": chain}, {"cross": {"hidden": "true"}})
             # Hide ligands for chain too
-            xyzview.addStyle({"chain": chain, "hetflag": True},{"cross": {"hidden": "true"}})
+            xyzview.addStyle(
+                {"chain": chain, "hetflag": True}, {"cross": {"hidden": "true"}}
+            )
 
     if len(selected_chains) == 1:
-        xyzview.zoomTo({'chain': f'{selected_chains[0]}'}) 
+        xyzview.zoomTo({"chain": f"{selected_chains[0]}"})
     else:
         xyzview.zoomTo()
 
     for att_weight, first, second, _, _, _ in attention_pairs:
-        stmol.add_cylinder(xyzview, start=first, end=second, cylradius=att_weight, cylColor='red', dashed=False)
+        stmol.add_cylinder(
+            xyzview,
+            start=first,
+            end=second,
+            cylradius=att_weight,
+            cylColor="red",
+            dashed=False,
+        )
 
     if label_resi:
         for hl_resi in hl_resi_list:
-            xyzview.addResLabels({"chain": hl_chain,"resi": hl_resi},
-            {"backgroundColor": "lightgray","fontColor": "black","backgroundOpacity": 0.5})
+            xyzview.addResLabels(
+                {"chain": hl_chain, "resi": hl_resi},
+                {
+                    "backgroundColor": "lightgray",
+                    "fontColor": "black",
+                    "backgroundOpacity": 0.5,
+                },
+            )
 
     if label_highest:
         for _, _, chain, res in top_residues:
-            xyzview.addResLabels({"chain": chain, "resi": res},
-            {"backgroundColor": "lightgray", "fontColor": "black", "backgroundOpacity": 0.5})
+            xyzview.addResLabels(
+                {"chain": chain, "resi": res},
+                {
+                    "backgroundColor": "lightgray",
+                    "fontColor": "black",
+                    "backgroundOpacity": 0.5,
+                },
+            )
             if sidechain_highest:
-                xyzview.addStyle({"chain": chain, "resi": res},{"stick": {"radius": 0.2}})
+                xyzview.addStyle(
+                    {"chain": chain, "resi": res}, {"stick": {"radius": 0.2}}
+                )
     return xyzview
+
 
 xyzview = get_3dview(pdb_id)
 showmol(xyzview, height=500, width=800)
