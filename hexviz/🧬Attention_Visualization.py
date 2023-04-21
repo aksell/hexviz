@@ -124,7 +124,6 @@ attention_pairs, top_residues = get_attention_pairs(
     head=head,
     threshold=min_attn,
     model_type=selected_model.name,
-    ec_class=ec_class,
     top_n=n_highest_resis,
 )
 
@@ -197,28 +196,35 @@ def get_3dview(pdb):
 xyzview = get_3dview(pdb_id)
 showmol(xyzview, height=500, width=800)
 
-st.markdown(f"""
-Visualize attention weights from protein language models on protein structures.
-Currently attention weights for PDB: [{pdb_id}](https://www.rcsb.org/structure/{pdb_id}) from layer: {layer_one}, head: {head_one} above {min_attn} from {selected_model.name.value}
-are visualized as red bars. The {n_highest_resis} residues with the highest sum of attention are labeled.
-Visualize attention weights on protein structures for the protein language models TAPE-BERT, ZymCTRL and ProtBERT.
-Pick a PDB ID, layer and head to visualize attention.
-""", unsafe_allow_html=True)
+st.markdown(
+    f"""
+Pick a PDB ID, layer and head to visualize attention from the selected protein language model ({selected_model.name.value}).
+""",
+    unsafe_allow_html=True,
+)
 
 chain_dict = {f"{chain.id}": chain for chain in list(structure.get_chains())}
 data = []
-for att_weight, _ , chain, resi in top_residues:
+for att_weight, _, chain, resi in top_residues:
     res = chain_dict[chain][resi]
     el = (att_weight, f"{res.resname:3}{res.id[1]}")
     data.append(el)
 
-df = pd.DataFrame(data, columns=['Total attention (disregarding direction)', 'Residue'])
-st.markdown(f"The {n_highest_resis} residues with the highest attention sum are labeled in the visualization and listed below:")
+df = pd.DataFrame(data, columns=["Total attention (disregarding direction)", "Residue"])
+st.markdown(
+    f"The {n_highest_resis} residues with the highest attention sums are labeled in the visualization and listed here:"
+)
 st.table(df)
 
-st.markdown("""Clik in to the [Identify Interesting heads](#Identify-Interesting-heads) page to get an overview of attention
-            patterns across all layers and heads
-            to help you find heads with interesting attention patterns to study here.""")
+st.markdown(
+    """
+### Check out the other pages
+[🗺️Identify Interesting heads](Identify_Interesting_Heads) give a birds-eye view of attention patterns for a model,
+this can help you pick what specific attention heads to look at for your protein.
+
+[📄Documentation](Documentation) has information on protein language models, attention analysis and hexviz."""
+)
+
 """
 The attention visualization is inspired by [provis](https://github.com/salesforce/provis#provis-attention-visualizer).
 """

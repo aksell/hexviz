@@ -40,7 +40,13 @@ TODO: Add examples of attention patterns
 
 Read more about attention patterns in fex [Revealing the dark secrets of BERT](https://arxiv.org/abs/1908.08593).
 
-# FAQ
+## Protein Language models in Hexviz
+Hexviz currently supports the following models:
+1. [ProtBERT](https://huggingface.co/Rostlab/prot_bert_bfd)
+2. [ZymCTRL](https://huggingface.co/nferruz/ZymCTRL)
+3. [TapeBert](https://github.com/songlab-cal/tape/blob/master/tape/models/modeling_bert.py) - a nickname coined in BERTOLOGY meets biology for the Bert Base model pre-trained on Pfam in [TAPE](https://www.biorxiv.org/content/10.1101/676825v1). TapeBert is used extensively in BERTOlogy meets biology.
+
+## FAQ
 1. I can't see any attention- "bars" in the visualization, what is wrong? -> Lower the `minimum attention`.
 2. How are sequences I input folded? -> Using https://esmatlas.com/resources?action=fold
 """
