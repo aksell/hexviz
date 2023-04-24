@@ -99,7 +99,11 @@ def clean_and_validate_sequence(sequence: str) -> tuple[str, str | None]:
 
 
 @st.cache
-def get_attention(sequence: str, model_type: ModelType = ModelType.TAPE_BERT):
+def get_attention(
+    sequence: str,
+    model_type: ModelType = ModelType.TAPE_BERT,
+    remove_special_tokens: bool = True,
+):
     """
     Returns a tensor of shape [n_layers, n_heads, n_res, n_res] with attention weights
     """
@@ -111,8 +115,9 @@ def get_attention(sequence: str, model_type: ModelType = ModelType.TAPE_BERT):
         inputs = torch.tensor(token_idxs).unsqueeze(0)
         with torch.no_grad():
             attentions = model(inputs)[-1]
+        if remove_special_tokens:
             # Remove attention from <CLS> (first) and <SEP> (last) token
-        attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
+            attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     elif model_type == ModelType.ZymCTRL:
@@ -141,8 +146,9 @@ def get_attention(sequence: str, model_type: ModelType = ModelType.TAPE_BERT):
         inputs = torch.tensor(token_idxs).unsqueeze(0).to(device)
         with torch.no_grad():
             attentions = model(inputs, output_attentions=True)[-1]
+        if remove_special_tokens:
             # Remove attention from <CLS> (first) and <SEP> (last) token
-        attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
+            attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     elif model_type == ModelType.PROT_T5:
@@ -155,8 +161,9 @@ def get_attention(sequence: str, model_type: ModelType = ModelType.TAPE_BERT):
                 -1
             ]  # Do you need an attention mask?
 
-        # Remove attention to <pad> (first) and <extra_id_1>, <extra_id_2> (last) tokens
-        attentions = [attention[:, :, 3:-3, 3:-3] for attention in attentions]
+        if remove_special_tokens:
+            # Remove attention to <pad> (first) and <extra_id_1>, <extra_id_2> (last) tokens
+            attentions = [attention[:, :, 3:-3, 3:-3] for attention in attentions]
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     else:
