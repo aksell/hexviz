@@ -75,7 +75,6 @@ attention = get_attention(
     model_type=selected_model.name,
     remove_special_tokens=True,
 )
-st.write(attention.shape)
 
 fig = plot_tiled_heatmap(
     attention, layer_sequence=layer_sequence, head_sequence=head_sequence
