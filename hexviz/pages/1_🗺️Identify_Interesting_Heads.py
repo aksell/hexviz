@@ -73,7 +73,7 @@ st.markdown(
 attention = get_attention(
     sequence=truncated_sequence,
     model_type=selected_model.name,
-    remove_special_tokens=False,
+    remove_special_tokens=True,
 )
 st.write(attention.shape)
 
