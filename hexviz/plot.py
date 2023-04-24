@@ -65,11 +65,13 @@ def plot_single_heatmap(
         MaxNLocator(integer=True, steps=[1, 2, 5], prune="both", nbins=max_labels)
     )
 
+    tick_indices_x = np.clip((ax.get_xticks()).astype(int), 0, slice_end - slice_start)
+    tick_indices_y = np.clip((ax.get_yticks()).astype(int), 0, slice_end - slice_start)
     ax.set_xticklabels(
-        np.arange(slice_start, slice_end + 1)[ax.get_xticks().astype(int)], fontsize=8
+        np.arange(slice_start, slice_end + 1)[tick_indices_x], fontsize=8
     )
     ax.set_yticklabels(
-        np.arange(slice_start, slice_end + 1)[ax.get_yticks().astype(int)], fontsize=8
+        np.arange(slice_start, slice_end + 1)[tick_indices_y], fontsize=8
     )
 
     # Set the x and y axis minor ticks
