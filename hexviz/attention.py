@@ -162,8 +162,8 @@ def get_attention(
             ]  # Do you need an attention mask?
 
         if remove_special_tokens:
-            # Remove attention to <pad> (first) and <extra_id_1>, <extra_id_2> (last) tokens
-            attentions = [attention[:, :, 3:-3, 3:-3] for attention in attentions]
+            # Remove attention to </s> (last) token
+            attentions = [attention[:, :, :-1, :-1] for attention in attentions]
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     else:
