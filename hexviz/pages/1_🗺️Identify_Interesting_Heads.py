@@ -1,6 +1,7 @@
 import streamlit as st
 
 from hexviz.attention import clean_and_validate_sequence, get_attention, get_sequence
+from hexviz.config import URL
 from hexviz.models import Model, ModelType
 from hexviz.plot import plot_single_heatmap, plot_tiled_heatmap
 from hexviz.view import (
@@ -105,11 +106,12 @@ with mid:
     head = head_one - 1
 with right:
     st.markdown(
-        """
+        f"""
           
 
-        ### [🧬View attention from head on structure](Attention_Visualization)
-        """
+        ### <a href="{URL}Attention_Visualization">🧬View attention from head on structure</a>
+        """,
+        unsafe_allow_html=True,
     )
 
 

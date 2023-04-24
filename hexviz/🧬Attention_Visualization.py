@@ -11,9 +11,12 @@ from hexviz.attention import (
 )
 from hexviz.models import Model, ModelType
 from hexviz.view import menu_items, select_model, select_pdb, select_protein
+from hexviz.config import URL
+
 
 st.set_page_config(layout="centered", menu_items=menu_items)
 st.title("Attention Visualization on proteins")
+
 
 for k, v in st.session_state.items():
     st.session_state[k] = v
@@ -218,12 +221,15 @@ st.markdown(
 st.table(df)
 
 st.markdown(
-    """
+    f"""
 ### Check out the other pages
-[🗺️Identify Interesting heads](Identify_Interesting_Heads) gives a bird's eye view of attention patterns for a model.
+<a href="{URL}Identify_Interesting_Heads" target="_self">🗺️Identify Interesting Heads</a> gives a
+ bird's eye view of attention patterns for a model.
 This can help you pick what specific attention heads to look at for your protein.
 
-[📄Documentation](Documentation) has information on protein language models, attention analysis and hexviz."""
+<a href="{URL}Documentation" target="_self">📄Documentation</a> has information on protein 
+language models, attention analysis and hexviz.""",
+    unsafe_allow_html=True,
 )
 
 """
