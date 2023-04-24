@@ -22,6 +22,7 @@ models = [
     Model(name=ModelType.TAPE_BERT, layers=12, heads=12),
     Model(name=ModelType.ZymCTRL, layers=36, heads=16),
     Model(name=ModelType.PROT_BERT, layers=30, heads=16),
+    Model(name=ModelType.PROT_T5, layers=24, heads=32),
 ]
 
 with st.expander(
@@ -219,8 +220,8 @@ st.table(df)
 st.markdown(
     """
 ### Check out the other pages
-[🗺️Identify Interesting heads](Identify_Interesting_Heads) give a birds-eye view of attention patterns for a model,
-this can help you pick what specific attention heads to look at for your protein.
+[🗺️Identify Interesting heads](Identify_Interesting_Heads) gives a bird's eye view of attention patterns for a model.
+This can help you pick what specific attention heads to look at for your protein.
 
 [📄Documentation](Documentation) has information on protein language models, attention analysis and hexviz."""
 )

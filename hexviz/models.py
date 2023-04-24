@@ -10,6 +10,8 @@ from transformers import (
     BertTokenizer,
     GPT2LMHeadModel,
     GPT2TokenizerFast,
+    T5EncoderModel,
+    T5Tokenizer,
 )
 
 
@@ -17,6 +19,7 @@ class ModelType(str, Enum):
     TAPE_BERT = "TapeBert"
     ZymCTRL = "ZymCTRL"
     PROT_BERT = "ProtBert"
+    PROT_T5 = "ProtT5"
 
 
 class Model:
@@ -48,4 +51,16 @@ def get_prot_bert() -> tuple[BertTokenizer, BertModel]:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     tokenizer = BertTokenizer.from_pretrained("Rostlab/prot_bert", do_lower_case=False)
     model = BertModel.from_pretrained("Rostlab/prot_bert").to(device)
+    return tokenizer, model
+
+
+@st.cache
+def get_prot_t5():
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    tokenizer = T5Tokenizer.from_pretrained(
+        "Rostlab/prot_t5_xl_half_uniref50-enc", do_lower_case=False
+    )
+    model = T5EncoderModel.from_pretrained("Rostlab/prot_t5_xl_half_uniref50-enc").to(
+        device
+    )
     return tokenizer, model

@@ -45,6 +45,7 @@ Hexviz currently supports the following models:
 1. [ProtBERT](https://huggingface.co/Rostlab/prot_bert_bfd)
 2. [ZymCTRL](https://huggingface.co/nferruz/ZymCTRL)
 3. [TapeBert](https://github.com/songlab-cal/tape/blob/master/tape/models/modeling_bert.py) - a nickname coined in BERTOLOGY meets biology for the Bert Base model pre-trained on Pfam in [TAPE](https://www.biorxiv.org/content/10.1101/676825v1). TapeBert is used extensively in BERTOlogy meets biology.
+4. [ProtT5 half](https://huggingface.co/Rostlab/prot_t5_xl_half_uniref50-enc)
 
 ## FAQ
 1. I can't see any attention- "bars" in the visualization, what is wrong? -> Lower the `minimum attention`.

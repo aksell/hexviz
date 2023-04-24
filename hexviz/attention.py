@@ -6,7 +6,13 @@ import streamlit as st
 import torch
 from Bio.PDB import PDBParser, Polypeptide, Structure
 
-from hexviz.models import ModelType, get_prot_bert, get_tape_bert, get_zymctrl
+from hexviz.models import (
+    ModelType,
+    get_prot_bert,
+    get_prot_t5,
+    get_tape_bert,
+    get_zymctrl,
+)
 
 
 def get_structure(pdb_code: str) -> Structure:
@@ -20,6 +26,7 @@ def get_structure(pdb_code: str) -> Structure:
     structure = parser.get_structure(pdb_code, file)
     return structure
 
+
 def get_pdb_file(pdb_code: str) -> Structure:
     """
     Get structure from PDB
@@ -28,6 +35,7 @@ def get_pdb_file(pdb_code: str) -> Structure:
     pdb_data = request.urlopen(pdb_url).read().decode("utf-8")
     file = StringIO(pdb_data)
     return file
+
 
 @st.cache
 def get_pdb_from_seq(sequence: str) -> str:
@@ -39,6 +47,7 @@ def get_pdb_from_seq(sequence: str) -> str:
     pdb_str = res.text
     return pdb_str
 
+
 def get_chains(structure: Structure) -> list[str]:
     """
     Get list of chains in a structure
@@ -49,6 +58,7 @@ def get_chains(structure: Structure) -> list[str]:
             chains.append(chain.id)
     return chains
 
+
 def get_sequence(chain) -> str:
     """
     Get sequence from a chain
@@ -57,13 +67,18 @@ def get_sequence(chain) -> str:
     """
     residues = [residue.get_resname() for residue in chain.get_residues()]
     # TODO ask if using protein_letters_3to1_extended makes sense
-    residues_single_letter = map(lambda x: Polypeptide.protein_letters_3to1.get(x, "X"), residues)
+    residues_single_letter = map(
+        lambda x: Polypeptide.protein_letters_3to1.get(x, "X"), residues
+    )
 
     return "".join(list(residues_single_letter))
 
+
 def clean_and_validate_sequence(sequence: str) -> tuple[str, str | None]:
     lines = sequence.split("\n")
-    cleaned_sequence = "".join(line.upper() for line in lines if not line.startswith(">"))
+    cleaned_sequence = "".join(
+        line.upper() for line in lines if not line.startswith(">")
+    )
     cleaned_sequence = cleaned_sequence.replace(" ", "")
     valid_residues = set(Polypeptide.protein_letters_3to1.values())
     residues_in_sequence = set(cleaned_sequence)
@@ -84,9 +99,7 @@ def clean_and_validate_sequence(sequence: str) -> tuple[str, str | None]:
 
 
 @st.cache
-def get_attention(
-    sequence: str, model_type: ModelType = ModelType.TAPE_BERT  
-):
+def get_attention(sequence: str, model_type: ModelType = ModelType.TAPE_BERT):
     """
     Returns a tensor of shape [n_layers, n_heads, n_res, n_res] with attention weights
     """
@@ -104,11 +117,15 @@ def get_attention(
 
     elif model_type == ModelType.ZymCTRL:
         tokenizer, model = get_zymctrl()
-        inputs = tokenizer(sequence, return_tensors='pt').input_ids.to(device)
-        attention_mask = tokenizer(sequence, return_tensors='pt').attention_mask.to(device)
+        inputs = tokenizer(sequence, return_tensors="pt").input_ids.to(device)
+        attention_mask = tokenizer(sequence, return_tensors="pt").attention_mask.to(
+            device
+        )
 
         with torch.no_grad():
-            outputs = model(inputs, attention_mask=attention_mask, output_attentions=True)
+            outputs = model(
+                inputs, attention_mask=attention_mask, output_attentions=True
+            )
             attentions = outputs.attentions
 
         # torch.Size([1, n_heads, n_res, n_res]) -> torch.Size([n_heads, n_res, n_res])
@@ -128,11 +145,26 @@ def get_attention(
         attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
+    elif model_type == ModelType.PROT_T5:
+        tokenizer, model = get_prot_t5()
+        sequence_separated = " ".join(sequence)
+        token_idxs = tokenizer.encode(sequence_separated)
+        inputs = torch.tensor(token_idxs).unsqueeze(0).to(device)
+        with torch.no_grad():
+            attentions = model(inputs, output_attentions=True)[
+                -1
+            ]  # Do you need an attention mask?
+
+        # Remove attention to <pad> (first) and <extra_id_1>, <extra_id_2> (last) tokens
+        attentions = [attention[:, :, 3:-3, 3:-3] for attention in attentions]
+        attentions = torch.stack([attention.squeeze(0) for attention in attentions])
+
     else:
         raise ValueError(f"Model {model_type} not supported")
 
     # Transfer to CPU to avoid issues with streamlit caching
     return attentions.cpu()
+
 
 def unidirectional_avg_filtered(attention, layer, head, threshold):
     num_layers, num_heads, seq_len, _ = attention.shape
@@ -147,7 +179,7 @@ def unidirectional_avg_filtered(attention, layer, head, threshold):
             if avg >= threshold:
                 unidirectional_avg_for_head.append((avg, i, j))
     return unidirectional_avg_for_head
- 
+
 
 # Passing the pdb_str here is a workaround for streamlit caching
 # where I need the input to be hashable and not changing
@@ -155,7 +187,15 @@ def unidirectional_avg_filtered(attention, layer, head, threshold):
 # Thist twice. If streamlit is upgaded to past 0.17 this can be
 # fixed.
 @st.cache
-def get_attention_pairs(pdb_str: str, layer: int, head: int, chain_ids: list[str] | None ,threshold: int = 0.2, model_type: ModelType = ModelType.TAPE_BERT, top_n: int = 2):
+def get_attention_pairs(
+    pdb_str: str,
+    layer: int,
+    head: int,
+    chain_ids: list[str] | None,
+    threshold: int = 0.2,
+    model_type: ModelType = ModelType.TAPE_BERT,
+    top_n: int = 2,
+):
     structure = PDBParser().get_structure("pdb", StringIO(pdb_str))
     if chain_ids:
         chains = [ch for ch in structure.get_chains() if ch.id in chain_ids]
@@ -167,9 +207,11 @@ def get_attention_pairs(pdb_str: str, layer: int, head: int, chain_ids: list[str
     for chain in chains:
         sequence = get_sequence(chain)
         attention = get_attention(sequence=sequence, model_type=model_type)
-        attention_unidirectional = unidirectional_avg_filtered(attention, layer, head, threshold)
+        attention_unidirectional = unidirectional_avg_filtered(
+            attention, layer, head, threshold
+        )
 
-        # Store sum of attention in to a resiue (from the unidirectional attention) 
+        # Store sum of attention in to a resiue (from the unidirectional attention)
         residue_attention = {}
         for attn_value, res_1, res_2 in attention_unidirectional:
             try:
@@ -178,15 +220,18 @@ def get_attention_pairs(pdb_str: str, layer: int, head: int, chain_ids: list[str
             except KeyError:
                 continue
 
-            attention_pairs.append((attn_value, coord_1, coord_2, chain.id, res_1, res_2))
+            attention_pairs.append(
+                (attn_value, coord_1, coord_2, chain.id, res_1, res_2)
+            )
             residue_attention[res_1] = residue_attention.get(res_1, 0) + attn_value
             residue_attention[res_2] = residue_attention.get(res_2, 0) + attn_value
-        
-        top_n_residues = sorted(residue_attention.items(), key=lambda x: x[1], reverse=True)[:top_n]
-        
+
+        top_n_residues = sorted(
+            residue_attention.items(), key=lambda x: x[1], reverse=True
+        )[:top_n]
+
         for res, attn_sum in top_n_residues:
             coord = chain[res]["CA"].coord.tolist()
             top_residues.append((attn_sum, coord, chain.id, res))
-        
-    return attention_pairs, top_residues
 
+    return attention_pairs, top_residues

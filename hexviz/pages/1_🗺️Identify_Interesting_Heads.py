@@ -23,6 +23,7 @@ models = [
     Model(name=ModelType.TAPE_BERT, layers=12, heads=12),
     Model(name=ModelType.ZymCTRL, layers=36, heads=16),
     Model(name=ModelType.PROT_BERT, layers=30, heads=16),
+    Model(name=ModelType.PROT_T5, layers=24, heads=32),
 ]
 
 with st.expander(
