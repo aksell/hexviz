@@ -70,6 +70,7 @@ st.markdown(
 # TODO: Decide if you should get attention for the full sequence or just the truncated sequence
 # Attention values will change depending on what we do.
 attention = get_attention(sequence=truncated_sequence, model_type=selected_model.name)
+st.write(attention.shape)
 
 fig = plot_tiled_heatmap(
     attention, layer_sequence=layer_sequence, head_sequence=head_sequence
