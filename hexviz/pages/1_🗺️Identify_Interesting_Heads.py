@@ -2,7 +2,7 @@ import streamlit as st
 
 from hexviz.attention import clean_and_validate_sequence, get_attention, get_sequence
 from hexviz.models import Model, ModelType
-from hexviz.plot import plot_tiled_heatmap
+from hexviz.plot import plot_single_heatmap, plot_tiled_heatmap
 from hexviz.view import (
     menu_items,
     select_heads_and_layers,
@@ -75,4 +75,41 @@ st.write(attention.shape)
 fig = plot_tiled_heatmap(
     attention, layer_sequence=layer_sequence, head_sequence=head_sequence
 )
+
+
 st.pyplot(fig)
+
+st.subheader("Plot single head")
+left, mid, right = st.columns(3)
+with left:
+    if "selected_layer" not in st.session_state:
+        st.session_state["selected_layer"] = 5
+    layer_one = st.selectbox(
+        "Layer",
+        options=[i for i in range(1, selected_model.layers + 1)],
+        key="selected_layer",
+    )
+    layer = layer_one - 1
+with mid:
+    if "selected_head" not in st.session_state:
+        st.session_state["selected_head"] = 1
+    head_one = st.selectbox(
+        "Head",
+        options=[i for i in range(1, selected_model.heads + 1)],
+        key="selected_head",
+    )
+    head = head_one - 1
+with right:
+    st.markdown(
+        """
+          
+
+        ### [🧬View attention from head on structure](Attention_Visualization)
+        """
+    )
+
+
+single_head_fig = plot_single_heatmap(
+    attention, layer, head, slice_start, slice_end, max_labels=10
+)
+st.pyplot(single_head_fig)
