@@ -1,7 +1,9 @@
 import streamlit as st
 
+from hexviz.config import URL
+
 st.markdown(
-    """
+    f"""
 ## Protein language models
 There has been an explosion of capabilities in natural language processing models in the last few years.
 These architectural advances from NLP have proven to work very well for protein sequences, and we now have protein language models (pLMs) that can generate novel functional proteins sequences [ProtGPT2](https://www.nature.com/articles/s42256-022-00499-z)
@@ -23,8 +25,8 @@ domain experts to explore and interpret the knowledge contained in pLMs.
 
 ## How to use Hexviz
 There are two views:
-1. [**Attention Visualization**](Attention_Visualization) Shows attention weights from a single head as red bars between residues on a protein structure.
-2. [**Identify Interesting Heads**](Identify_Interesting_Heads) Plots attention weights between residues as a heatmap for each head in the model.
+1. <a href="{URL}Attention_Visualization" target="_self">🧬Attention Visualization</a> Shows attention weights from a single head as red bars between residues on a protein structure.
+2. <a href="{URL}Identify_Interesting_Heads" target="_self">🗺️Identify Interesting Heads</a> Plots attention weights between residues as a heatmap for each head in the model.
 
 The first view is the meat of the application and is where you can investigate how attention patterns map onto the structure of a protein you're interested in.
 Use the second view to narrow down to a few heads that you want to investigate attention patterns from in detail.
@@ -50,5 +52,6 @@ Hexviz currently supports the following models:
 ## FAQ
 1. I can't see any attention- "bars" in the visualization, what is wrong? -> Lower the `minimum attention`.
 2. How are sequences I input folded? -> Using https://esmatlas.com/resources?action=fold
-"""
+""",
+    unsafe_allow_html=True,
 )
