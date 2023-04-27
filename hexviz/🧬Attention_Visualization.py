@@ -1,3 +1,6 @@
+import re
+
+import numpy as np
 import pandas as pd
 import py3Dmol
 import stmol
@@ -9,10 +12,10 @@ from hexviz.attention import (
     get_attention_pairs,
     get_chains,
 )
+from hexviz.config import URL
+from hexviz.ec_number import ECNumber
 from hexviz.models import Model, ModelType
 from hexviz.view import menu_items, select_model, select_pdb, select_protein
-from hexviz.config import URL
-
 
 st.set_page_config(layout="centered", menu_items=menu_items)
 st.title("Attention Visualization on proteins")
@@ -110,15 +113,60 @@ with right:
     )
     head = head_one - 1
 
-ec_class = ""
+ec_number = ""
 if selected_model.name == ModelType.ZymCTRL:
+    st.sidebar.markdown(
+        """
+    ZymCTRL EC number
+    ---
+    """
+    )
     try:
-        ec_class = structure.header["compound"]["1"]["ec"]
+        ec_number = structure.header["compound"]["1"]["ec"]
     except KeyError:
         pass
-    ec_class = st.sidebar.text_input(
-        "Enzyme classification number fetched from PDB", ec_class
-    )
+    ec_number = st.sidebar.text_input("Enzyme Comission number (EC)", ec_number)
+
+    # Validate EC number
+    if not re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", ec_number):
+        st.sidebar.error(
+            "Please enter a valid Enzyme Commission number in the format of 4 integers separated by periods (e.g., 1.2.3.21)"
+        )
+
+    if ec_number:
+        if selected_chains:
+            all_chains = [
+                ch for ch in structure.get_chains() if ch.id in selected_chains
+            ]
+        else:
+            all_chains = list(structure.get_chains())
+        the_chain = all_chains[0]
+        res_1 = the_chain[1]["CA"].coord.tolist()
+        res_2 = the_chain[2]["CA"].coord.tolist()
+
+        # Calculate the vector from res_1 to res_2
+        vector = [res_2[i] - res_1[i] for i in range(3)]
+
+        # Reverse the vector
+        reverse_vector = [-v for v in vector]
+
+        # Normalize the reverse vector
+        reverse_vector_normalized = np.array(reverse_vector) / np.linalg.norm(
+            reverse_vector
+        )
+        radius = 1
+        coordinates = [
+            [res_1[j] + i * 2 * radius * reverse_vector_normalized[j] for j in range(3)]
+            for i in range(4)
+        ]
+        colors = ["blue", "green", "orange", "red"]
+        EC_numbers = ec_number.split(".")
+        EC_tag = [
+            ECNumber(number=num, coordinate=coord, color=color, radius=radius)
+            for num, coord, color in zip(EC_numbers, coordinates, colors)
+        ]
+        EC_colored = [f":{color}[{EC.number}]" for EC, color in zip(EC_tag, colors)]
+        st.sidebar.write("Visualized as colored spheres: " + ".".join(EC_colored))
 
 
 attention_pairs, top_residues = get_attention_pairs(
@@ -129,6 +177,7 @@ attention_pairs, top_residues = get_attention_pairs(
     threshold=min_attn,
     model_type=selected_model.name,
     top_n=n_highest_resis,
+    ec_number=EC_tag if ec_number else None,
 )
 
 sorted_by_attention = sorted(attention_pairs, key=lambda x: x[0], reverse=True)
@@ -168,6 +217,15 @@ def get_3dview(pdb):
             cylColor="red",
             dashed=False,
         )
+
+    if selected_model.name == ModelType.ZymCTRL and ec_number:
+        for EC_num in EC_tag:
+            stmol.add_sphere(
+                xyzview,
+                spcenter=EC_num.coordinate,
+                radius=EC_num.radius,
+                spColor=EC_num.color,
+            )
 
     if label_resi:
         for hl_resi in hl_resi_list:

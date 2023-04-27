@@ -6,6 +6,7 @@ import streamlit as st
 import torch
 from Bio.PDB import PDBParser, Polypeptide, Structure
 
+from hexviz.ec_number import ECNumber
 from hexviz.models import (
     ModelType,
     get_prot_bert,
@@ -98,11 +99,39 @@ def clean_and_validate_sequence(sequence: str) -> tuple[str, str | None]:
         return cleaned_sequence, None
 
 
+def remove_special_tokens_and_periods(attentions_tuple, sequence, tokenizer):
+    tokens = tokenizer.tokenize(sequence)
+
+    indices_to_remove = [
+        i
+        for i, token in enumerate(tokens)
+        if token in {".", "<sep>", "<start>", "<end>", "<pad>"}
+    ]
+
+    new_attentions = []
+
+    for attentions in attentions_tuple:
+        # Remove rows and columns corresponding to special tokens and periods
+        for idx in sorted(indices_to_remove, reverse=True):
+            attentions = torch.cat(
+                (attentions[:, :, :idx], attentions[:, :, idx + 1 :]), dim=2
+            )
+            attentions = torch.cat(
+                (attentions[:, :, :, :idx], attentions[:, :, :, idx + 1 :]), dim=3
+            )
+
+        # Append the modified attentions tensor to the new_attentions list
+        new_attentions.append(attentions)
+
+    return new_attentions
+
+
 @st.cache
 def get_attention(
     sequence: str,
     model_type: ModelType = ModelType.TAPE_BERT,
     remove_special_tokens: bool = True,
+    ec_number: list[ECNumber] = None,
 ):
     """
     Returns a tensor of shape [n_layers, n_heads, n_res, n_res] with attention weights
@@ -122,6 +151,10 @@ def get_attention(
 
     elif model_type == ModelType.ZymCTRL:
         tokenizer, model = get_zymctrl()
+
+        if ec_number:
+            sequence = f"{'.'.join([ec.number for ec in ec_number])}<sep><start>{sequence}<end><pad>"
+
         inputs = tokenizer(sequence, return_tensors="pt").input_ids.to(device)
         attention_mask = tokenizer(sequence, return_tensors="pt").attention_mask.to(
             device
@@ -132,6 +165,12 @@ def get_attention(
                 inputs, attention_mask=attention_mask, output_attentions=True
             )
             attentions = outputs.attentions
+
+        if ec_number:
+            # Remove attention to special tokens and periods separating EC number components
+            attentions = remove_special_tokens_and_periods(
+                attentions, sequence, tokenizer
+            )
 
         # torch.Size([1, n_heads, n_res, n_res]) -> torch.Size([n_heads, n_res, n_res])
         attention_squeezed = [torch.squeeze(attention) for attention in attentions]
@@ -202,6 +241,7 @@ def get_attention_pairs(
     threshold: int = 0.2,
     model_type: ModelType = ModelType.TAPE_BERT,
     top_n: int = 2,
+    ec_number: list[ECNumber] | None = None,
 ):
     structure = PDBParser().get_structure("pdb", StringIO(pdb_str))
     if chain_ids:
@@ -213,7 +253,9 @@ def get_attention_pairs(
     top_residues = []
     for chain in chains:
         sequence = get_sequence(chain)
-        attention = get_attention(sequence=sequence, model_type=model_type)
+        attention = get_attention(
+            sequence=sequence, model_type=model_type, ec_number=ec_number
+        )
         attention_unidirectional = unidirectional_avg_filtered(
             attention, layer, head, threshold
         )
@@ -222,8 +264,19 @@ def get_attention_pairs(
         residue_attention = {}
         for attn_value, res_1, res_2 in attention_unidirectional:
             try:
-                coord_1 = chain[res_1]["CA"].coord.tolist()
-                coord_2 = chain[res_2]["CA"].coord.tolist()
+                if not ec_number:
+                    coord_1 = chain[res_1]["CA"].coord.tolist()
+                    coord_2 = chain[res_2]["CA"].coord.tolist()
+                else:
+                    if res_1 < 4:
+                        coord_1 = ec_number[res_1].coordinate
+                    else:
+                        coord_1 = chain[res_1 - 4]["CA"].coord.tolist()
+                    if res_2 < 4:
+                        coord_2 = ec_number[res_2].coordinate
+                    else:
+                        coord_2 = chain[res_2 - 4]["CA"].coord.tolist()
+
             except KeyError:
                 continue
 
@@ -236,7 +289,14 @@ def get_attention_pairs(
         )[:top_n]
 
         for res, attn_sum in top_n_residues:
-            coord = chain[res]["CA"].coord.tolist()
+            if not ec_number:
+                coord = chain[res]["CA"].coord.tolist()
+            else:
+                if res < 4:
+                    # Ignore EC tag chars as these can't be labeled
+                    continue
+                else:
+                    coord = chain[res - 4]["CA"].coord.tolist()
             top_residues.append((attn_sum, coord, chain.id, res))
 
     return attention_pairs, top_residues
