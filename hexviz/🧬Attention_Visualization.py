@@ -159,7 +159,7 @@ def get_3dview(pdb):
     else:
         xyzview.zoomTo()
 
-    for att_weight, first, second, _, _, _ in attention_pairs:
+    for att_weight, first, second in attention_pairs:
         stmol.add_cylinder(
             xyzview,
             start=first,

@@ -227,9 +227,7 @@ def get_attention_pairs(
             except KeyError:
                 continue
 
-            attention_pairs.append(
-                (attn_value, coord_1, coord_2, chain.id, res_1, res_2)
-            )
+            attention_pairs.append((attn_value, coord_1, coord_2))
             residue_attention[res_1] = residue_attention.get(res_1, 0) + attn_value
             residue_attention[res_2] = residue_attention.get(res_2, 0) + attn_value
 
