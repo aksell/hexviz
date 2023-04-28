@@ -287,12 +287,12 @@ for att_weight, _, chain, resi in top_residues:
         res = chain_dict[chain][resi]
     except KeyError:
         continue
-    el = (att_weight, f"{res.resname:3}{res.id[1]}")
+    el = (att_weight, f"{res.resname:3}{res.id[1]}({chain})")
     data.append(el)
 
 df = pd.DataFrame(data, columns=["Total attention (disregarding direction)", "Residue"])
 st.markdown(
-    f"The {n_highest_resis} residues with the highest attention sums are labeled in the visualization and listed here:"
+    f"The {n_highest_resis} residues (per chain) with the highest attention sums are labeled in the visualization and listed here:"
 )
 st.table(df)
 
