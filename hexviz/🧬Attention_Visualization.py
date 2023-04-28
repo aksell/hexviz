@@ -255,8 +255,10 @@ def get_3dview(pdb):
 
     if label_highest:
         for _, _, chain, res in top_residues:
+            one_indexed_res = res + 1
             xyzview.addResLabels(
-                {"chain": chain, "resi": res},
+                
+                {"chain": chain, "resi": one_indexed_res},
                 {
                     "backgroundColor": "lightgray",
                     "fontColor": "black",
@@ -280,7 +282,9 @@ Pick a PDB ID, layer and head to visualize attention from the selected protein l
     unsafe_allow_html=True,
 )
 
-chain_dict = {f"{chain.id}": chain for chain in list(structure.get_chains())}
+chain_dict = {
+    f"{chain.id}": list(chain.get_residues()) for chain in list(structure.get_chains())
+}
 data = []
 for att_weight, _, chain, resi in top_residues:
     try:

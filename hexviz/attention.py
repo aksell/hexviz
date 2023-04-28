@@ -5,6 +5,7 @@ import requests
 import streamlit as st
 import torch
 from Bio.PDB import PDBParser, Polypeptide, Structure
+from Bio.PDB.Residue import Residue
 
 from hexviz.ec_number import ECNumber
 from hexviz.models import (
@@ -60,16 +61,15 @@ def get_chains(structure: Structure) -> list[str]:
     return chains
 
 
-def get_sequence(chain) -> str:
+def res_to_1letter(residues: list[Residue]) -> str:
     """
-    Get sequence from a chain
+    Get single letter sequence from a list or Residues
 
     Residues not in the standard 20 amino acids are replaced with X
     """
-    residues = [residue.get_resname() for residue in chain.get_residues()]
-    # TODO ask if using protein_letters_3to1_extended makes sense
+    res_names = [residue.get_resname() for residue in residues]
     residues_single_letter = map(
-        lambda x: Polypeptide.protein_letters_3to1.get(x, "X"), residues
+        lambda x: Polypeptide.protein_letters_3to1.get(x, "X"), res_names
     )
 
     return "".join(list(residues_single_letter))
@@ -243,11 +243,20 @@ def get_attention_pairs(
     top_n: int = 2,
     ec_numbers: list[list[ECNumber]] | None = None,
 ):
+    """
+    Note: All residue indexes returned are 0 indexed
+    """
     structure = PDBParser().get_structure("pdb", StringIO(pdb_str))
+
     if chain_ids:
         chains = [ch for ch in structure.get_chains() if ch.id in chain_ids]
     else:
         chains = list(structure.get_chains())
+    # Chains are treated at lists of residues to make indexing easier
+    # and to avoid troubles with residues in PDB files not having a consistent
+    # start index
+    chain_ids = [chain.id for chain in chains]
+    chains = [[res for res in chain.get_residues()] for chain in chains]
 
     attention_pairs = []
     top_residues = []
@@ -257,7 +266,7 @@ def get_attention_pairs(
 
     for i, chain in enumerate(chains):
         ec_number = ec_numbers[i] if ec_numbers else None
-        sequence = get_sequence(chain)
+        sequence = res_to_1letter(chain)
         attention = get_attention(
             sequence=sequence, model_type=model_type, ec_number=ec_number
         )
@@ -270,7 +279,6 @@ def get_attention_pairs(
         for attn_value, res_1, res_2 in attention_unidirectional:
             try:
                 if not ec_number:
-                    # Should you add 1 here? Arent chains 1 indexed and res indexeds 0 indexed
                     coord_1 = chain[res_1]["CA"].coord.tolist()
                     coord_2 = chain[res_2]["CA"].coord.tolist()
                 else:
@@ -303,6 +311,6 @@ def get_attention_pairs(
 
         for res, attn_sum in top_n_residues:
             coord = chain[res]["CA"].coord.tolist()
-            top_residues.append((attn_sum, coord, chain.id, res))
+            top_residues.append((attn_sum, coord, chain_ids[i], res))
 
     return attention_pairs, top_residues
