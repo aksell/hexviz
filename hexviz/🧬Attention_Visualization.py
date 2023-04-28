@@ -283,7 +283,10 @@ Pick a PDB ID, layer and head to visualize attention from the selected protein l
 chain_dict = {f"{chain.id}": chain for chain in list(structure.get_chains())}
 data = []
 for att_weight, _, chain, resi in top_residues:
-    res = chain_dict[chain][resi]
+    try:
+        res = chain_dict[chain][resi]
+    except KeyError:
+        continue
     el = (att_weight, f"{res.resname:3}{res.id[1]}")
     data.append(el)
 
