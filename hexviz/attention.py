@@ -241,7 +241,7 @@ def get_attention_pairs(
     threshold: int = 0.2,
     model_type: ModelType = ModelType.TAPE_BERT,
     top_n: int = 2,
-    ec_number: list[ECNumber] | None = None,
+    ec_numbers: list[list[ECNumber]] | None = None,
 ):
     structure = PDBParser().get_structure("pdb", StringIO(pdb_str))
     if chain_ids:
@@ -251,7 +251,8 @@ def get_attention_pairs(
 
     attention_pairs = []
     top_residues = []
-    for chain in chains:
+    for i, chain in enumerate(chains):
+        ec_number = ec_numbers[i] if ec_numbers else None
         sequence = get_sequence(chain)
         attention = get_attention(
             sequence=sequence, model_type=model_type, ec_number=ec_number

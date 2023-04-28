@@ -135,37 +135,51 @@ if selected_model.name == ModelType.ZymCTRL:
 
     if ec_number:
         if selected_chains:
-            all_chains = [
+            shown_chains = [
                 ch for ch in structure.get_chains() if ch.id in selected_chains
             ]
         else:
-            all_chains = list(structure.get_chains())
-        the_chain = all_chains[0]
-        res_1 = the_chain[1]["CA"].coord.tolist()
-        res_2 = the_chain[2]["CA"].coord.tolist()
+            shown_chains = list(structure.get_chains())
 
-        # Calculate the vector from res_1 to res_2
-        vector = [res_2[i] - res_1[i] for i in range(3)]
-
-        # Reverse the vector
-        reverse_vector = [-v for v in vector]
-
-        # Normalize the reverse vector
-        reverse_vector_normalized = np.array(reverse_vector) / np.linalg.norm(
-            reverse_vector
-        )
-        radius = 1
-        coordinates = [
-            [res_1[j] + i * 2 * radius * reverse_vector_normalized[j] for j in range(3)]
-            for i in range(4)
-        ]
+        EC_tags = []
         colors = ["blue", "green", "orange", "red"]
+        radius = 1
         EC_numbers = ec_number.split(".")
-        EC_tag = [
-            ECNumber(number=num, coordinate=coord, color=color, radius=radius)
-            for num, coord, color in zip(EC_numbers, coordinates, colors)
-        ]
-        EC_colored = [f":{color}[{EC.number}]" for EC, color in zip(EC_tag, colors)]
+        for ch in shown_chains:
+            first_residues = []
+            i = 1
+            while len(first_residues) < 2:
+                try:
+                    first_residues.append(ch[i]["CA"].coord.tolist())
+                except KeyError:
+                    pass
+                i += 1
+            res_1, res_2 = first_residues
+
+            # Calculate the vector from res_1 to res_2
+            vector = [res_2[i] - res_1[i] for i in range(3)]
+
+            # Reverse the vector
+            reverse_vector = [-v for v in vector]
+
+            # Normalize the reverse vector
+            reverse_vector_normalized = np.array(reverse_vector) / np.linalg.norm(
+                reverse_vector
+            )
+            coordinates = [
+                [
+                    res_1[j] + i * 2 * radius * reverse_vector_normalized[j]
+                    for j in range(3)
+                ]
+                for i in range(4)
+            ]
+            EC_tag = [
+                ECNumber(number=num, coordinate=coord, color=color, radius=radius)
+                for num, coord, color in zip(EC_numbers, coordinates, colors)
+            ]
+            EC_tags.append(EC_tag)
+
+        EC_colored = [f":{color}[{num}]" for num, color in zip(EC_numbers, colors)]
         st.sidebar.write("Visualized as colored spheres: " + ".".join(EC_colored))
 
 
@@ -177,7 +191,7 @@ attention_pairs, top_residues = get_attention_pairs(
     threshold=min_attn,
     model_type=selected_model.name,
     top_n=n_highest_resis,
-    ec_number=EC_tag if ec_number else None,
+    ec_numbers=EC_tags if ec_number else None,
 )
 
 sorted_by_attention = sorted(attention_pairs, key=lambda x: x[0], reverse=True)
@@ -219,13 +233,14 @@ def get_3dview(pdb):
         )
 
     if selected_model.name == ModelType.ZymCTRL and ec_number:
-        for EC_num in EC_tag:
-            stmol.add_sphere(
-                xyzview,
-                spcenter=EC_num.coordinate,
-                radius=EC_num.radius,
-                spColor=EC_num.color,
-            )
+        for EC_tag in EC_tags:
+            for EC_num in EC_tag:
+                stmol.add_sphere(
+                    xyzview,
+                    spcenter=EC_num.coordinate,
+                    radius=EC_num.radius,
+                    spColor=EC_num.color,
+                )
 
     if label_resi:
         for hl_resi in hl_resi_list:
