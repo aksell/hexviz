@@ -251,6 +251,10 @@ def get_attention_pairs(
 
     attention_pairs = []
     top_residues = []
+
+    ec_tag_length = 4
+    is_tag = lambda x: x < ec_tag_length
+
     for i, chain in enumerate(chains):
         ec_number = ec_numbers[i] if ec_numbers else None
         sequence = get_sequence(chain)
@@ -266,38 +270,39 @@ def get_attention_pairs(
         for attn_value, res_1, res_2 in attention_unidirectional:
             try:
                 if not ec_number:
+                    # Should you add 1 here? Arent chains 1 indexed and res indexeds 0 indexed
                     coord_1 = chain[res_1]["CA"].coord.tolist()
                     coord_2 = chain[res_2]["CA"].coord.tolist()
                 else:
-                    if res_1 < 4:
+                    if is_tag(res_1):
                         coord_1 = ec_number[res_1].coordinate
                     else:
-                        coord_1 = chain[res_1 - 4]["CA"].coord.tolist()
-                    if res_2 < 4:
+                        coord_1 = chain[res_1 - ec_tag_length]["CA"].coord.tolist()
+                    if is_tag(res_2):
                         coord_2 = ec_number[res_2].coordinate
                     else:
-                        coord_2 = chain[res_2 - 4]["CA"].coord.tolist()
+                        coord_2 = chain[res_2 - ec_tag_length]["CA"].coord.tolist()
 
             except KeyError:
                 continue
 
             attention_pairs.append((attn_value, coord_1, coord_2))
-            residue_attention[res_1] = residue_attention.get(res_1, 0) + attn_value
-            residue_attention[res_2] = residue_attention.get(res_2, 0) + attn_value
+            if not ec_number:
+                residue_attention[res_1] = residue_attention.get(res_1, 0) + attn_value
+                residue_attention[res_2] = residue_attention.get(res_2, 0) + attn_value
+            else:
+                for res in [res_1, res_2]:
+                    if not is_tag(res):
+                        residue_attention[res - ec_tag_length] = (
+                            residue_attention.get(res - ec_tag_length, 0) + attn_value
+                        )
 
         top_n_residues = sorted(
             residue_attention.items(), key=lambda x: x[1], reverse=True
         )[:top_n]
 
         for res, attn_sum in top_n_residues:
-            if not ec_number:
-                coord = chain[res]["CA"].coord.tolist()
-            else:
-                if res < 4:
-                    # Ignore EC tag chars as these can't be labeled
-                    continue
-                else:
-                    coord = chain[res - 4]["CA"].coord.tolist()
+            coord = chain[res]["CA"].coord.tolist()
             top_residues.append((attn_sum, coord, chain.id, res))
 
     return attention_pairs, top_residues
