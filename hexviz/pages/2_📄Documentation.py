@@ -13,8 +13,8 @@ For an introduction to protein language models for protein design check out [Con
 
 ## Interpreting protein language models by visualizing attention patterns
 With these impressive capabilities it is natural to ask what protein language models are learning and how they work -- we want to **interpret** the models.
-In natural language processing **attention analysis** has proven to be a useful tool for interpreting transformer model internals see fex ([Abnar et al. 2020](https://arxiv.org/abs/2005.00928v2).
-[BERTology meets biology] provides a thorough introduction to how we can analyze Transformer protein models through the lens of attention, they show exciting findings such as:
+In natural language processing **attention analysis** has proven to be a useful tool for interpreting transformer model internals see fex ([Abnar et al. 2020](https://arxiv.org/abs/2005.00928v2)).
+[BERTology meets biology](https://arxiv.org/abs/2006.15222) provides a thorough introduction to how we can analyze Transformer protein models through the lens of attention, they show exciting findings such as:
 > Attention: (1) captures the folding structure of proteins, connecting amino acids that are far apart in the underlying sequence, but spatially close in the three-dimensional structure, (2) targets binding sites, a key functional component of proteins, and (3) focuses on progressively more complex biophysical properties with increasing layer depth
 
 Most existing tools for analyzing and visualizing attention patterns focus on models trained on text. It can be hard to analyze protein sequences using these tools as
@@ -46,7 +46,7 @@ Read more about attention patterns in fex [Revealing the dark secrets of BERT](h
 Hexviz currently supports the following models:
 1. [ProtBERT](https://huggingface.co/Rostlab/prot_bert_bfd)
 2. [ZymCTRL](https://huggingface.co/nferruz/ZymCTRL)
-3. [TapeBert](https://github.com/songlab-cal/tape/blob/master/tape/models/modeling_bert.py) - a nickname coined in BERTOLOGY meets biology for the Bert Base model pre-trained on Pfam in [TAPE](https://www.biorxiv.org/content/10.1101/676825v1). TapeBert is used extensively in BERTOlogy meets biology.
+3. [TapeBert](https://github.com/songlab-cal/tape/blob/master/tape/models/modeling_bert.py) - a nickname coined in BERTology meets biology for the Bert Base model pre-trained on Pfam in [TAPE](https://www.biorxiv.org/content/10.1101/676825v1). TapeBert is used extensively in BERTOlogy meets biology.
 4. [ProtT5 half](https://huggingface.co/Rostlab/prot_t5_xl_half_uniref50-enc)
 
 ## FAQ
