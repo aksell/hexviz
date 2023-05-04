@@ -60,7 +60,5 @@ def get_prot_t5():
     tokenizer = T5Tokenizer.from_pretrained(
         "Rostlab/prot_t5_xl_half_uniref50-enc", do_lower_case=False
     )
-    model = T5EncoderModel.from_pretrained("Rostlab/prot_t5_xl_half_uniref50-enc").to(
-        device
-    )
+    model = T5EncoderModel.from_pretrained("Rostlab/prot_t5_xl_half_uniref50-enc").to(device)
     return tokenizer, model

@@ -27,14 +27,10 @@ models = [
     Model(name=ModelType.PROT_T5, layers=24, heads=32),
 ]
 
-with st.expander(
-    "Input a PDB id, upload a PDB file or input a sequence", expanded=True
-):
+with st.expander("Input a PDB id, upload a PDB file or input a sequence", expanded=True):
     pdb_id = select_pdb()
     uploaded_file = st.file_uploader("2.Upload PDB", type=["pdb"])
-    input_sequence = st.text_area(
-        "3.Input sequence", "", key="input_sequence", max_chars=400
-    )
+    input_sequence = st.text_area("3.Input sequence", "", key="input_sequence", max_chars=400)
     sequence, error = clean_and_validate_sequence(input_sequence)
     if error:
         st.error(error)
@@ -65,7 +61,9 @@ truncated_sequence = sequence[slice_start - 1 : slice_end]
 layer_sequence, head_sequence = select_heads_and_layers(st.sidebar, selected_model)
 
 st.markdown(
-    f"Each tile is a heatmap of attention for a section of the {source} chain ({chain_selection}) from residue {slice_start} to {slice_end}. Adjust the section length and starting point in the sidebar."
+    f"""Each tile is a heatmap of attention for a section of the {source} chain
+    ({chain_selection}) from residue {slice_start} to {slice_end}. Adjust the
+    section length and starting point in the sidebar."""
 )
 
 # TODO: Decide if you should get attention for the full sequence or just the truncated sequence
@@ -74,11 +72,10 @@ attention = get_attention(
     sequence=truncated_sequence,
     model_type=selected_model.name,
     remove_special_tokens=True,
+    ec_number=ec_number,
 )
 
-fig = plot_tiled_heatmap(
-    attention, layer_sequence=layer_sequence, head_sequence=head_sequence
-)
+fig = plot_tiled_heatmap(attention, layer_sequence=layer_sequence, head_sequence=head_sequence)
 
 
 st.pyplot(fig)

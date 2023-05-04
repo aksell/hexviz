@@ -1610,6 +1610,14 @@ pygments = ">=2.13.0,<3.0.0"
 jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
+name = "ruff"
+version = "0.0.264"
+description = "An extremely fast Python linter, written in Rust."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[[package]]
 name = "s3transfer"
 version = "0.6.0"
 description = "An Amazon S3 Transfer Manager"
@@ -2196,7 +2204,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "flake8 (<5)", "pytest-co
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "79f191c2f3cc09035f7d0f543aa08c44c0a39de462336ca23eeea26ac29218de"
+content-hash = "502949174f23054a4b450dfc0bb16df64c43d7d6c3e60d1adaf2835962223c32"
 
 [metadata.files]
 altair = []
@@ -2428,6 +2436,7 @@ requests = []
 rfc3339-validator = []
 rfc3986-validator = []
 rich = []
+ruff = []
 s3transfer = []
 scipy = []
 semver = []

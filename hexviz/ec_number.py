@@ -6,6 +6,4 @@ class ECNumber:
         self.radius = radius
 
     def __str__(self):
-        return (
-            f"(EC: {self.number}, Coordinate: {self.coordinate}, Color: {self.color})"
-        )
+        return f"(EC: {self.number}, Coordinate: {self.coordinate}, Color: {self.color})"

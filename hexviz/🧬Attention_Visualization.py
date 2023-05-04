@@ -31,14 +31,10 @@ models = [
     Model(name=ModelType.PROT_T5, layers=24, heads=32),
 ]
 
-with st.expander(
-    "Input a PDB id, upload a PDB file or input a sequence", expanded=True
-):
-    pdb_id = select_pdb()
+with st.expander("Input a PDB id, upload a PDB file or input a sequence", expanded=True):
+    pdb_id = select_pdb() or "2WK4"
     uploaded_file = st.file_uploader("2.Upload PDB", type=["pdb"])
-    input_sequence = st.text_area(
-        "3.Input sequence", "", key="input_sequence", max_chars=400
-    )
+    input_sequence = st.text_area("3.Input sequence", "", key="input_sequence", max_chars=400)
     sequence, error = clean_and_validate_sequence(input_sequence)
     if error:
         st.error(error)
@@ -59,9 +55,7 @@ selected_chains = st.sidebar.multiselect(
     label="Select Chain(s)", options=chains, key="selected_chains"
 )
 
-show_ligands = st.sidebar.checkbox(
-    "Show ligands", value=st.session_state.get("show_ligands", True)
-)
+show_ligands = st.sidebar.checkbox("Show ligands", value=st.session_state.get("show_ligands", True))
 st.session_state.show_ligands = show_ligands
 
 
@@ -71,9 +65,7 @@ st.sidebar.markdown(
     ---
     """
 )
-min_attn = st.sidebar.slider(
-    "Minimum attention", min_value=0.0, max_value=0.4, value=0.1
-)
+min_attn = st.sidebar.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
 n_highest_resis = st.sidebar.number_input(
     "Num highest attention resis to label", value=2, min_value=1, max_value=100
 )
@@ -84,9 +76,7 @@ sidechain_highest = st.sidebar.checkbox("Show sidechains", value=True)
 
 with st.sidebar.expander("Label residues manually"):
     hl_chain = st.selectbox(label="Chain to label", options=selected_chains, index=0)
-    hl_resi_list = st.multiselect(
-        label="Selected Residues", options=list(range(1, 5000))
-    )
+    hl_resi_list = st.multiselect(label="Selected Residues", options=list(range(1, 5000)))
 
     label_resi = st.checkbox(label="Label Residues", value=True)
 
@@ -97,10 +87,13 @@ with left:
 with mid:
     if "selected_layer" not in st.session_state:
         st.session_state["selected_layer"] = 5
-    layer_one = st.selectbox(
-        "Layer",
-        options=[i for i in range(1, selected_model.layers + 1)],
-        key="selected_layer",
+    layer_one = (
+        st.selectbox(
+            "Layer",
+            options=[i for i in range(1, selected_model.layers + 1)],
+            key="selected_layer",
+        )
+        or 5
     )
     layer = layer_one - 1
 with right:
@@ -135,9 +128,7 @@ if selected_model.name == ModelType.ZymCTRL:
 
     if ec_number:
         if selected_chains:
-            shown_chains = [
-                ch for ch in structure.get_chains() if ch.id in selected_chains
-            ]
+            shown_chains = [ch for ch in structure.get_chains() if ch.id in selected_chains]
         else:
             shown_chains = list(structure.get_chains())
 
@@ -163,14 +154,9 @@ if selected_model.name == ModelType.ZymCTRL:
             reverse_vector = [-v for v in vector]
 
             # Normalize the reverse vector
-            reverse_vector_normalized = np.array(reverse_vector) / np.linalg.norm(
-                reverse_vector
-            )
+            reverse_vector_normalized = np.array(reverse_vector) / np.linalg.norm(reverse_vector)
             coordinates = [
-                [
-                    res_1[j] + i * 2 * radius * reverse_vector_normalized[j]
-                    for j in range(3)
-                ]
+                [res_1[j] + i * 2 * radius * reverse_vector_normalized[j] for j in range(3)]
                 for i in range(4)
             ]
             EC_tag = [
@@ -213,9 +199,7 @@ def get_3dview(pdb):
         for chain in hidden_chains:
             xyzview.setStyle({"chain": chain}, {"cross": {"hidden": "true"}})
             # Hide ligands for chain too
-            xyzview.addStyle(
-                {"chain": chain, "hetflag": True}, {"cross": {"hidden": "true"}}
-            )
+            xyzview.addStyle({"chain": chain, "hetflag": True}, {"cross": {"hidden": "true"}})
 
     if len(selected_chains) == 1:
         xyzview.zoomTo({"chain": f"{selected_chains[0]}"})
@@ -257,7 +241,6 @@ def get_3dview(pdb):
         for _, _, chain, res in top_residues:
             one_indexed_res = res + 1
             xyzview.addResLabels(
-                
                 {"chain": chain, "resi": one_indexed_res},
                 {
                     "backgroundColor": "lightgray",
@@ -266,9 +249,7 @@ def get_3dview(pdb):
                 },
             )
             if sidechain_highest:
-                xyzview.addStyle(
-                    {"chain": chain, "resi": res}, {"stick": {"radius": 0.2}}
-                )
+                xyzview.addStyle({"chain": chain, "resi": res}, {"stick": {"radius": 0.2}})
     return xyzview
 
 
@@ -282,9 +263,7 @@ Pick a PDB ID, layer and head to visualize attention from the selected protein l
     unsafe_allow_html=True,
 )
 
-chain_dict = {
-    f"{chain.id}": list(chain.get_residues()) for chain in list(structure.get_chains())
-}
+chain_dict = {f"{chain.id}": list(chain.get_residues()) for chain in list(structure.get_chains())}
 data = []
 for att_weight, _, chain, resi in top_residues:
     try:

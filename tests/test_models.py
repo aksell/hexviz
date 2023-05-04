@@ -1,4 +1,3 @@
-
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
 from hexviz.models import get_zymctrl

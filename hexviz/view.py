@@ -18,11 +18,7 @@ def get_selecte_model_index(models):
         return 0
     else:
         return next(
-            (
-                i
-                for i, model in enumerate(models)
-                if model.name.value == selected_model_name
-            ),
+            (i for i, model in enumerate(models) if model.name.value == selected_model_name),
             None,
         )
 
@@ -89,10 +85,10 @@ def select_protein(pdb_code, uploaded_file, input_sequence):
         pdb_str = get_pdb_from_seq(str(input_sequence))
         if "selected_chains" in st.session_state:
             del st.session_state.selected_chains
-        source = f"Input sequence + ESM-fold"
+        source = "Input sequence + ESM-fold"
     elif "uploaded_pdb_str" in st.session_state:
         pdb_str = st.session_state.uploaded_pdb_str
-        source = f"Uploaded file stored in cache"
+        source = "Uploaded file stored in cache"
     else:
         file = get_pdb_file(pdb_code)
         pdb_str = file.read()
@@ -135,7 +131,12 @@ def select_heads_and_layers(sidebar, model):
 
 
 def select_sequence_slice(sequence_length):
-    st.sidebar.markdown("Sequence segment to plot")
+    st.sidebar.markdown(
+        """
+        Sequence segment to plot
+        ---
+        """
+    )
     if "sequence_slice" not in st.session_state:
         st.session_state.sequence_slice = (1, min(50, sequence_length))
     slice = st.sidebar.slider(

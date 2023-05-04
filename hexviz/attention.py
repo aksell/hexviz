@@ -68,18 +68,14 @@ def res_to_1letter(residues: list[Residue]) -> str:
     Residues not in the standard 20 amino acids are replaced with X
     """
     res_names = [residue.get_resname() for residue in residues]
-    residues_single_letter = map(
-        lambda x: Polypeptide.protein_letters_3to1.get(x, "X"), res_names
-    )
+    residues_single_letter = map(lambda x: Polypeptide.protein_letters_3to1.get(x, "X"), res_names)
 
     return "".join(list(residues_single_letter))
 
 
 def clean_and_validate_sequence(sequence: str) -> tuple[str, str | None]:
     lines = sequence.split("\n")
-    cleaned_sequence = "".join(
-        line.upper() for line in lines if not line.startswith(">")
-    )
+    cleaned_sequence = "".join(line.upper() for line in lines if not line.startswith(">"))
     cleaned_sequence = cleaned_sequence.replace(" ", "")
     valid_residues = set(Polypeptide.protein_letters_3to1.values())
     residues_in_sequence = set(cleaned_sequence)
@@ -87,7 +83,9 @@ def clean_and_validate_sequence(sequence: str) -> tuple[str, str | None]:
     # Check if the sequence exceeds the max allowed length
     max_sequence_length = 400
     if len(cleaned_sequence) > max_sequence_length:
-        error_message = f"Sequence exceeds the max allowed length of {max_sequence_length} characters"
+        error_message = (
+            f"Sequence exceeds the max allowed length of {max_sequence_length} characters"
+        )
         return cleaned_sequence, error_message
 
     illegal_residues = residues_in_sequence - valid_residues
@@ -103,9 +101,7 @@ def remove_special_tokens_and_periods(attentions_tuple, sequence, tokenizer):
     tokens = tokenizer.tokenize(sequence)
 
     indices_to_remove = [
-        i
-        for i, token in enumerate(tokens)
-        if token in {".", "<sep>", "<start>", "<end>", "<pad>"}
+        i for i, token in enumerate(tokens) if token in {".", "<sep>", "<start>", "<end>", "<pad>"}
     ]
 
     new_attentions = []
@@ -113,9 +109,7 @@ def remove_special_tokens_and_periods(attentions_tuple, sequence, tokenizer):
     for attentions in attentions_tuple:
         # Remove rows and columns corresponding to special tokens and periods
         for idx in sorted(indices_to_remove, reverse=True):
-            attentions = torch.cat(
-                (attentions[:, :, :idx], attentions[:, :, idx + 1 :]), dim=2
-            )
+            attentions = torch.cat((attentions[:, :, :idx], attentions[:, :, idx + 1 :]), dim=2)
             attentions = torch.cat(
                 (attentions[:, :, :, :idx], attentions[:, :, :, idx + 1 :]), dim=3
             )
@@ -131,7 +125,7 @@ def get_attention(
     sequence: str,
     model_type: ModelType = ModelType.TAPE_BERT,
     remove_special_tokens: bool = True,
-    ec_number: list[ECNumber] = None,
+    ec_number: str = None,
 ):
     """
     Returns a tensor of shape [n_layers, n_heads, n_res, n_res] with attention weights
@@ -153,24 +147,18 @@ def get_attention(
         tokenizer, model = get_zymctrl()
 
         if ec_number:
-            sequence = f"{'.'.join([ec.number for ec in ec_number])}<sep><start>{sequence}<end><pad>"
+            sequence = f"{ec_number}<sep><start>{sequence}<end><pad>"
 
         inputs = tokenizer(sequence, return_tensors="pt").input_ids.to(device)
-        attention_mask = tokenizer(sequence, return_tensors="pt").attention_mask.to(
-            device
-        )
+        attention_mask = tokenizer(sequence, return_tensors="pt").attention_mask.to(device)
 
         with torch.no_grad():
-            outputs = model(
-                inputs, attention_mask=attention_mask, output_attentions=True
-            )
+            outputs = model(inputs, attention_mask=attention_mask, output_attentions=True)
             attentions = outputs.attentions
 
         if ec_number:
             # Remove attention to special tokens and periods separating EC number components
-            attentions = remove_special_tokens_and_periods(
-                attentions, sequence, tokenizer
-            )
+            attentions = remove_special_tokens_and_periods(attentions, sequence, tokenizer)
 
         # torch.Size([1, n_heads, n_res, n_res]) -> torch.Size([n_heads, n_res, n_res])
         attention_squeezed = [torch.squeeze(attention) for attention in attentions]
@@ -196,9 +184,7 @@ def get_attention(
         token_idxs = tokenizer.encode(sequence_separated)
         inputs = torch.tensor(token_idxs).unsqueeze(0).to(device)
         with torch.no_grad():
-            attentions = model(inputs, output_attentions=True)[
-                -1
-            ]  # Do you need an attention mask?
+            attentions = model(inputs, output_attentions=True)[-1]  # Do you need an attention mask?
 
         if remove_special_tokens:
             # Remove attention to </s> (last) token
@@ -262,17 +248,16 @@ def get_attention_pairs(
     top_residues = []
 
     ec_tag_length = 4
-    is_tag = lambda x: x < ec_tag_length
+
+    def is_tag(x):
+        return x < ec_tag_length
 
     for i, chain in enumerate(chains):
         ec_number = ec_numbers[i] if ec_numbers else None
+        ec_string = ".".join([ec.number for ec in ec_number]) if ec_number else ""
         sequence = res_to_1letter(chain)
-        attention = get_attention(
-            sequence=sequence, model_type=model_type, ec_number=ec_number
-        )
-        attention_unidirectional = unidirectional_avg_filtered(
-            attention, layer, head, threshold
-        )
+        attention = get_attention(sequence=sequence, model_type=model_type, ec_number=ec_string)
+        attention_unidirectional = unidirectional_avg_filtered(attention, layer, head, threshold)
 
         # Store sum of attention in to a resiue (from the unidirectional attention)
         residue_attention = {}
@@ -305,9 +290,7 @@ def get_attention_pairs(
                             residue_attention.get(res - ec_tag_length, 0) + attn_value
                         )
 
-        top_n_residues = sorted(
-            residue_attention.items(), key=lambda x: x[1], reverse=True
-        )[:top_n]
+        top_n_residues = sorted(residue_attention.items(), key=lambda x: x[1], reverse=True)[:top_n]
 
         for res, attn_sum in top_n_residues:
             coord = chain[res]["CA"].coord.tolist()
