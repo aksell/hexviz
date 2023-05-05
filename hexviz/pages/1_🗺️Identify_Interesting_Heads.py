@@ -1,6 +1,8 @@
+import re
+
 import streamlit as st
 
-from hexviz.attention import clean_and_validate_sequence, get_attention, get_sequence
+from hexviz.attention import clean_and_validate_sequence, get_attention, res_to_1letter
 from hexviz.config import URL
 from hexviz.models import Model, ModelType
 from hexviz.plot import plot_single_heatmap, plot_tiled_heatmap
@@ -51,11 +53,36 @@ chain_selection = st.sidebar.selectbox(
 )
 
 selected_chain = next(chain for chain in chains if chain.id == chain_selection)
-sequence = get_sequence(selected_chain)
+
+ec_number = ""
+if selected_model.name == ModelType.ZymCTRL:
+    st.sidebar.markdown(
+        """
+        ZymCTRL EC number
+        ---
+        """
+    )
+    try:
+        ec_number = structure.header["compound"]["1"]["ec"]
+    except KeyError:
+        pass
+    ec_number = st.sidebar.text_input("Enzyme Comission number (EC)", ec_number)
+
+    # Validate EC number
+    if not re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", ec_number):
+        st.sidebar.error(
+            """Please enter a valid Enzyme Commission number in the format of 4
+            integers separated by periods (e.g., 1.2.3.21)"""
+        )
+
+
+residues = [res for res in selected_chain.get_residues()]
+sequence = res_to_1letter(residues)
 
 l = len(sequence)
 slice_start, slice_end = select_sequence_slice(l)
 truncated_sequence = sequence[slice_start - 1 : slice_end]
+remove_special_tokens = st.sidebar.checkbox("Remove special tokens", key="remove_special_tokens")
 
 
 layer_sequence, head_sequence = select_heads_and_layers(st.sidebar, selected_model)
@@ -68,11 +95,10 @@ st.markdown(
 
 # TODO: Decide if you should get attention for the full sequence or just the truncated sequence
 # Attention values will change depending on what we do.
-attention = get_attention(
 attention, tokens = get_attention(
     sequence=truncated_sequence,
     model_type=selected_model.name,
-    remove_special_tokens=True,
+    remove_special_tokens=remove_special_tokens,
     ec_number=ec_number,
 )
 
@@ -111,8 +137,5 @@ with right:
         unsafe_allow_html=True,
     )
 
-
-single_head_fig = plot_single_heatmap(
-    attention, layer, head, slice_start, slice_end, max_labels=10
-)
+single_head_fig = plot_single_heatmap(attention, layer, head, tokens=tokens)
 st.pyplot(single_head_fig)

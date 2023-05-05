@@ -2,7 +2,7 @@ from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.ticker import MaxNLocator, MultipleLocator
+from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
@@ -40,42 +40,24 @@ def plot_single_heatmap(
     tensor,
     layer: int,
     head: int,
-    slice_start: int,
-    slice_end: int,
-    max_labels: int = 40,
+    tokens: list[str],
 ):
     single_heatmap = tensor[layer, head, :, :].detach().numpy()
 
     fig, ax = plt.subplots(figsize=(10, 10))
     heatmap = ax.imshow(single_heatmap, cmap="viridis", aspect="equal")
 
-    # Set the x and y axis major ticks and labels
-    ax.xaxis.set_major_locator(
-        MaxNLocator(integer=True, steps=[1, 2, 5], prune="both", nbins=max_labels)
-    )
-    ax.yaxis.set_major_locator(
-        MaxNLocator(integer=True, steps=[1, 2, 5], prune="both", nbins=max_labels)
-    )
+    # Set the x and y axis ticks
+    ax.xaxis.set_major_locator(FixedLocator(np.arange(0, len(tokens))))
+    ax.yaxis.set_major_locator(FixedLocator(np.arange(0, len(tokens))))
 
-    tick_indices_x = np.clip((ax.get_xticks()).astype(int), 0, slice_end - slice_start)
-    tick_indices_y = np.clip((ax.get_yticks()).astype(int), 0, slice_end - slice_start)
-    ax.set_xticklabels(
-        np.arange(slice_start, slice_end + 1)[tick_indices_x], fontsize=8
-    )
-    ax.set_yticklabels(
-        np.arange(slice_start, slice_end + 1)[tick_indices_y], fontsize=8
-    )
-
-    # Set the x and y axis minor ticks
-    ax.xaxis.set_minor_locator(MultipleLocator(1))
-    ax.yaxis.set_minor_locator(MultipleLocator(1))
+    # Set tick labels as sequence values
+    ax.set_xticklabels(tokens, fontsize=8, rotation=45, ha="right", rotation_mode="anchor")
+    ax.set_yticklabels(tokens, fontsize=8)
 
     # Set the axis labels
-    ax.set_xlabel("Residue Number")
-    ax.set_ylabel("Residue Number")
-
-    # Rotate the tick labels and set their alignment
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+    ax.set_xlabel("Sequence tokens")
+    ax.set_ylabel("Sequence tokens")
 
     # Create custom colorbar axes with the desired dimensions
     divider = make_axes_locatable(ax)
