@@ -69,6 +69,7 @@ st.markdown(
 # TODO: Decide if you should get attention for the full sequence or just the truncated sequence
 # Attention values will change depending on what we do.
 attention = get_attention(
+attention, tokens = get_attention(
     sequence=truncated_sequence,
     model_type=selected_model.name,
     remove_special_tokens=True,

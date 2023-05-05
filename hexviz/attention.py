@@ -8,13 +8,7 @@ from Bio.PDB import PDBParser, Polypeptide, Structure
 from Bio.PDB.Residue import Residue
 
 from hexviz.ec_number import ECNumber
-from hexviz.models import (
-    ModelType,
-    get_prot_bert,
-    get_prot_t5,
-    get_tape_bert,
-    get_zymctrl,
-)
+from hexviz.models import ModelType, get_prot_bert, get_prot_t5, get_tape_bert, get_zymctrl
 
 
 def get_structure(pdb_code: str) -> Structure:
@@ -117,7 +111,7 @@ def remove_special_tokens_and_periods(attentions_tuple, sequence, tokenizer):
         # Append the modified attentions tensor to the new_attentions list
         new_attentions.append(attentions)
 
-    return new_attentions
+    return new_attentions, [token for i, token in enumerate(tokens) if i not in indices_to_remove]
 
 
 @st.cache
@@ -129,6 +123,7 @@ def get_attention(
 ):
     """
     Returns a tensor of shape [n_layers, n_heads, n_res, n_res] with attention weights
+    and the sequence of tokenes that the attention tensor corresponds to
     """
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -141,6 +136,7 @@ def get_attention(
         if remove_special_tokens:
             # Remove attention from <CLS> (first) and <SEP> (last) token
             attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
+            inputs = inputs[:, 1:-1]
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     elif model_type == ModelType.ZymCTRL:
@@ -151,14 +147,13 @@ def get_attention(
 
         inputs = tokenizer(sequence, return_tensors="pt").input_ids.to(device)
         attention_mask = tokenizer(sequence, return_tensors="pt").attention_mask.to(device)
-
         with torch.no_grad():
             outputs = model(inputs, attention_mask=attention_mask, output_attentions=True)
             attentions = outputs.attentions
 
-        if ec_number:
+        if ec_number and remove_special_tokens:
             # Remove attention to special tokens and periods separating EC number components
-            attentions = remove_special_tokens_and_periods(attentions, sequence, tokenizer)
+            attentions, inputs = remove_special_tokens_and_periods(attentions, sequence, tokenizer)
 
         # torch.Size([1, n_heads, n_res, n_res]) -> torch.Size([n_heads, n_res, n_res])
         attention_squeezed = [torch.squeeze(attention) for attention in attentions]
@@ -173,9 +168,11 @@ def get_attention(
         inputs = torch.tensor(token_idxs).unsqueeze(0).to(device)
         with torch.no_grad():
             attentions = model(inputs, output_attentions=True)[-1]
+
         if remove_special_tokens:
             # Remove attention from <CLS> (first) and <SEP> (last) token
             attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
+            inputs = inputs[:, 1:-1]
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     elif model_type == ModelType.PROT_T5:
@@ -184,18 +181,21 @@ def get_attention(
         token_idxs = tokenizer.encode(sequence_separated)
         inputs = torch.tensor(token_idxs).unsqueeze(0).to(device)
         with torch.no_grad():
-            attentions = model(inputs, output_attentions=True)[-1]  # Do you need an attention mask?
+            attentions = model(inputs, output_attentions=True)[-1]
 
         if remove_special_tokens:
             # Remove attention to </s> (last) token
             attentions = [attention[:, :, :-1, :-1] for attention in attentions]
+            inputs = inputs[:, :-1]
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     else:
         raise ValueError(f"Model {model_type} not supported")
 
+    input_ids_list = inputs.squeeze().tolist()
+    tokens = tokenizer.convert_ids_to_tokens(input_ids_list)
     # Transfer to CPU to avoid issues with streamlit caching
-    return attentions.cpu()
+    return attentions.cpu(), tokens
 
 
 def unidirectional_avg_filtered(attention, layer, head, threshold):
@@ -256,7 +256,7 @@ def get_attention_pairs(
         ec_number = ec_numbers[i] if ec_numbers else None
         ec_string = ".".join([ec.number for ec in ec_number]) if ec_number else ""
         sequence = res_to_1letter(chain)
-        attention = get_attention(sequence=sequence, model_type=model_type, ec_number=ec_string)
+        attention, _ = get_attention(sequence=sequence, model_type=model_type, ec_number=ec_string)
         attention_unidirectional = unidirectional_avg_filtered(attention, layer, head, threshold)
 
         # Store sum of attention in to a resiue (from the unidirectional attention)
