@@ -7,11 +7,7 @@ import stmol
 import streamlit as st
 from stmol import showmol
 
-from hexviz.attention import (
-    clean_and_validate_sequence,
-    get_attention_pairs,
-    get_chains,
-)
+from hexviz.attention import clean_and_validate_sequence, get_attention_pairs, get_chains
 from hexviz.config import URL
 from hexviz.ec_number import ECNumber
 from hexviz.models import Model, ModelType
@@ -55,8 +51,12 @@ selected_chains = st.sidebar.multiselect(
     label="Select Chain(s)", options=chains, key="selected_chains"
 )
 
-show_ligands = st.sidebar.checkbox("Show ligands", value=st.session_state.get("show_ligands", True))
-st.session_state.show_ligands = show_ligands
+if "show_ligands" not in st.session_state:
+    st.session_state.show_ligands = True
+show_ligands = st.sidebar.checkbox("Show ligands", key="show_ligands")
+if "color_protein" not in st.session_state:
+    st.session_state.color_protein = True
+color_protein = st.sidebar.checkbox("Color protein", key="color_protein")
 
 
 st.sidebar.markdown(
@@ -186,7 +186,7 @@ sorted_by_attention = sorted(attention_pairs, key=lambda x: x[0], reverse=True)
 def get_3dview(pdb):
     xyzview = py3Dmol.view()
     xyzview.addModel(pdb_str, "pdb")
-    xyzview.setStyle({"cartoon": {"color": "spectrum"}})
+    xyzview.setStyle({"cartoon": {"color": "spectrum" if color_protein else "white"}})
     stmol.add_hover(xyzview, backgroundColor="black", fontColor="white")
 
     # Show all ligands as stick (heteroatoms)
