@@ -91,27 +91,15 @@ def clean_and_validate_sequence(sequence: str) -> tuple[str, str | None]:
         return cleaned_sequence, None
 
 
-def remove_special_tokens_and_periods(attentions_tuple, sequence, tokenizer):
-    tokens = tokenizer.tokenize(sequence)
+def remove_tokens(attentions, tokens, tokens_to_remove):
+    indices_to_remove = [i for i, token in enumerate(tokens) if token in tokens_to_remove]
 
-    indices_to_remove = [
-        i for i, token in enumerate(tokens) if token in {".", "<sep>", "<start>", "<end>", "<pad>"}
-    ]
+    # Remove rows and columns corresponding to special tokens and periods
+    for idx in sorted(indices_to_remove, reverse=True):
+        attentions = torch.cat((attentions[:, :, :idx], attentions[:, :, idx + 1 :]), dim=2)
+        attentions = torch.cat((attentions[:, :, :, :idx], attentions[:, :, :, idx + 1 :]), dim=3)
 
-    new_attentions = []
-
-    for attentions in attentions_tuple:
-        # Remove rows and columns corresponding to special tokens and periods
-        for idx in sorted(indices_to_remove, reverse=True):
-            attentions = torch.cat((attentions[:, :, :idx], attentions[:, :, idx + 1 :]), dim=2)
-            attentions = torch.cat(
-                (attentions[:, :, :, :idx], attentions[:, :, :, idx + 1 :]), dim=3
-            )
-
-        # Append the modified attentions tensor to the new_attentions list
-        new_attentions.append(attentions)
-
-    return new_attentions, [token for i, token in enumerate(tokens) if i not in indices_to_remove]
+    return attentions
 
 
 @st.cache
@@ -131,12 +119,17 @@ def get_attention(
         tokenizer, model = get_tape_bert()
         token_idxs = tokenizer.encode(sequence).tolist()
         inputs = torch.tensor(token_idxs).unsqueeze(0)
+
         with torch.no_grad():
             attentions = model(inputs)[-1]
+
+        tokenized_sequence = tokenizer.convert_ids_to_tokens(token_idxs)
+
         if remove_special_tokens:
             # Remove attention from <CLS> (first) and <SEP> (last) token
             attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
-            inputs = inputs[:, 1:-1]
+            tokenized_sequence = tokenized_sequence[1:-1]
+
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     elif model_type == ModelType.ZymCTRL:
@@ -151,9 +144,18 @@ def get_attention(
             outputs = model(inputs, attention_mask=attention_mask, output_attentions=True)
             attentions = outputs.attentions
 
+        tokenized_sequence = tokenizer.convert_ids_to_tokens(tokenizer.encode(sequence))
+
         if ec_number and remove_special_tokens:
             # Remove attention to special tokens and periods separating EC number components
-            attentions, inputs = remove_special_tokens_and_periods(attentions, sequence, tokenizer)
+            tokens_to_remove = [".", "<sep>", "<start>", "<end>", "<pad>"]
+            attentions = [
+                remove_tokens(attention, tokenized_sequence, tokens_to_remove)
+                for attention in attentions
+            ]
+            tokenized_sequence = [
+                token for token in tokenized_sequence if token not in tokens_to_remove
+            ]
 
         # torch.Size([1, n_heads, n_res, n_res]) -> torch.Size([n_heads, n_res, n_res])
         attention_squeezed = [torch.squeeze(attention) for attention in attentions]
@@ -169,10 +171,12 @@ def get_attention(
         with torch.no_grad():
             attentions = model(inputs, output_attentions=True)[-1]
 
+        tokenized_sequence = tokenizer.convert_ids_to_tokens(token_idxs)
         if remove_special_tokens:
             # Remove attention from <CLS> (first) and <SEP> (last) token
             attentions = [attention[:, :, 1:-1, 1:-1] for attention in attentions]
-            inputs = inputs[:, 1:-1]
+            tokenized_sequence = tokenized_sequence[1:-1]
+
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     elif model_type == ModelType.PROT_T5:
@@ -183,19 +187,18 @@ def get_attention(
         with torch.no_grad():
             attentions = model(inputs, output_attentions=True)[-1]
 
+        tokenized_sequence = tokenizer.convert_ids_to_tokens(token_idxs)
         if remove_special_tokens:
             # Remove attention to </s> (last) token
             attentions = [attention[:, :, :-1, :-1] for attention in attentions]
-            inputs = inputs[:, :-1]
+            tokenized_sequence = inputs[:-1]
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     else:
         raise ValueError(f"Model {model_type} not supported")
 
-    input_ids_list = inputs.squeeze().tolist()
-    tokens = tokenizer.convert_ids_to_tokens(input_ids_list)
     # Transfer to CPU to avoid issues with streamlit caching
-    return attentions.cpu(), tokens
+    return attentions.cpu(), tokenized_sequence
 
 
 def unidirectional_avg_filtered(attention, layer, head, threshold):
