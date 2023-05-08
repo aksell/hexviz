@@ -82,7 +82,9 @@ sequence = res_to_1letter(residues)
 l = len(sequence)
 slice_start, slice_end = select_sequence_slice(l)
 truncated_sequence = sequence[slice_start - 1 : slice_end]
-remove_special_tokens = st.sidebar.checkbox("Remove special tokens", key="remove_special_tokens")
+remove_special_tokens = st.sidebar.checkbox(
+    "Hide attention to special tokens", key="remove_special_tokens"
+)
 
 
 layer_sequence, head_sequence = select_heads_and_layers(st.sidebar, selected_model)
