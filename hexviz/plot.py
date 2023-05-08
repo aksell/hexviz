@@ -18,7 +18,9 @@ def plot_tiled_heatmap(tensor, layer_sequence: List[int], head_sequence: List[in
     fig, axes = plt.subplots(num_layers, num_heads, figsize=(x_size, y_size), squeeze=False)
     for i in range(num_layers):
         for j in range(num_heads):
-            axes[i, j].imshow(tensor[i, j].detach().numpy(), cmap="viridis", aspect="equal")
+            axes[i, j].imshow(
+                tensor[i, j].detach().numpy(), cmap="viridis", aspect="equal", vmin=0, vmax=1
+            )
             axes[i, j].axis("off")
 
             # Enumerate the axes
@@ -45,7 +47,7 @@ def plot_single_heatmap(
     single_heatmap = tensor[layer, head, :, :].detach().numpy()
 
     fig, ax = plt.subplots(figsize=(10, 10))
-    heatmap = ax.imshow(single_heatmap, cmap="viridis", aspect="equal")
+    heatmap = ax.imshow(single_heatmap, cmap="viridis", aspect="equal", vmin=0, vmax=1)
 
     # Set the x and y axis ticks
     ax.xaxis.set_major_locator(FixedLocator(np.arange(0, len(tokens))))
