@@ -191,7 +191,7 @@ def get_attention(
         if remove_special_tokens:
             # Remove attention to </s> (last) token
             attentions = [attention[:, :, :-1, :-1] for attention in attentions]
-            tokenized_sequence = inputs[:-1]
+            tokenized_sequence = tokenized_sequence[:-1]
         attentions = torch.stack([attention.squeeze(0) for attention in attentions])
 
     else:
