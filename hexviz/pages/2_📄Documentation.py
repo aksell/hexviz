@@ -25,19 +25,27 @@ tool for interpreting transformer model internals see fex ([Abnar et al.
 2020](https://arxiv.org/abs/2005.00928v2)).  [BERTology meets
 biology](https://arxiv.org/abs/2006.15222) provides a thorough introduction to
 how we can analyze Transformer protein models through the lens of attention,
-they show exciting findings such as: > Attention: (1) captures the folding
-structure of proteins, connecting amino acids that are far apart in the
-underlying sequence, but spatially close in the three-dimensional structure, (2)
-targets binding sites, a key functional component of proteins, and (3) focuses
-on progressively more complex biophysical properties with increasing layer depth
+they show exciting findings such as: 
+> Attention: (1) captures the folding
+> structure of proteins, connecting amino acids that are far apart in the
+> underlying sequence, but spatially close in the three-dimensional structure, (2)
+> targets binding sites, a key functional component of proteins, and (3) focuses
+> on progressively more complex biophysical properties with increasing layer depth
 
 Most existing tools for analyzing and visualizing attention patterns focus on
-models trained on text. It can be hard to analyze protein sequences using these
-tools as sequences can be long and we lack intuition about how the language of
-proteins work.  BERTology meets biology shows visualizing attention patterns in
-the context of protein structure can facilitate novel discoveries about what
-models learn.  [**Hexviz**](https://huggingface.co/spaces/aksell/hexviz) is a
-tool to simplify analyzing attention patterns in the context of protein
+models trained on text ([BertViz](https://github.com/jessevig/bertviz),
+[exBERT], [exBERT](https://exbert.net/)). It can be hard to analyze protein
+sequences using these tools as we don't have any intuitive understand about the
+protein language when looking at an amino acid sequence in the same way we do
+for natural language.  Experts studying proteins do have an understanding of
+proteins, but it is mostly in in the context of a protein's structure, not its
+sequence. Can we build a tool for analyzing attention patterns that can leverage
+expert's knowledge of protein structure to understand what pLMs learn?
+
+BERTology meets biology shows how visualizing attention patterns in the context
+of protein structure can facilitate novel discoveries about what models learn.
+[**Hexviz**](https://huggingface.co/spaces/aksell/hexviz) builds on this, and is
+a tool to simplify analyzing attention patterns in the context of protein
 structure. We hope this can enable domain experts to explore and interpret the
 knowledge contained in pLMs.
 
