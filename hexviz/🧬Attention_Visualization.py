@@ -71,7 +71,6 @@ n_highest_resis = st.sidebar.number_input(
 )
 label_highest = st.sidebar.checkbox("Label highest attention residues", value=True)
 sidechain_highest = st.sidebar.checkbox("Show sidechains", value=True)
-# TODO add avg or max attention as params
 
 
 with st.sidebar.expander("Label residues manually"):
@@ -238,7 +237,7 @@ def get_3dview(pdb):
             )
 
     if label_highest:
-        for _, _, chain, res in top_residues:
+        for _, chain, res in top_residues:
             one_indexed_res = res + 1
             xyzview.addResLabels(
                 {"chain": chain, "resi": one_indexed_res},
@@ -265,7 +264,7 @@ Pick a PDB ID, layer and head to visualize attention from the selected protein l
 
 chain_dict = {f"{chain.id}": list(chain.get_residues()) for chain in list(structure.get_chains())}
 data = []
-for att_weight, _, chain, resi in top_residues:
+for att_weight, chain, resi in top_residues:
     try:
         res = chain_dict[chain][resi]
     except KeyError:
@@ -273,9 +272,9 @@ for att_weight, _, chain, resi in top_residues:
     el = (att_weight, f"{res.resname:3}{res.id[1]}({chain})")
     data.append(el)
 
-df = pd.DataFrame(data, columns=["Total attention (disregarding direction)", "Residue"])
+df = pd.DataFrame(data, columns=["Total attention to", "Residue"])
 st.markdown(
-    f"The {n_highest_resis} residues (per chain) with the highest attention sums are labeled in the visualization and listed here:"
+    f"The {n_highest_resis} residues (per chain) with the highest attention to them are labeled in the visualization and listed here:"
 )
 st.table(df)
 
