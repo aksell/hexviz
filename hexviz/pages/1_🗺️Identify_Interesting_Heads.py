@@ -134,7 +134,7 @@ with right:
         f"""
           
 
-        ### <a href="{URL}Attention_Visualization">🧬View attention from head on structure</a>
+        ### <a href="{URL}Attention_Visualization" target="_self">🧬View attention from head on structure</a>
         """,
         unsafe_allow_html=True,
     )
