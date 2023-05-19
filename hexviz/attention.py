@@ -299,6 +299,7 @@ def get_attention_pairs(
         top_n_values, top_n_indexes = torch.topk(attention_into_res, top_n)
 
         for res, attn_sum in zip(top_n_indexes, top_n_values):
-            top_residues.append((attn_sum.item(), chain_ids[i], res.item()))
+            fraction_of_total_attention = attn_sum.item() / len(sequence)
+            top_residues.append((fraction_of_total_attention, chain_ids[i], res.item()))
 
     return attention_pairs, top_residues

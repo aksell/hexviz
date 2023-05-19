@@ -264,15 +264,19 @@ Pick a PDB ID, layer and head to visualize attention from the selected protein l
 
 chain_dict = {f"{chain.id}": list(chain.get_residues()) for chain in list(structure.get_chains())}
 data = []
-for att_weight, chain, resi in top_residues:
+for fraction_of_total_attention, chain, resi in top_residues:
     try:
         res = chain_dict[chain][resi]
     except KeyError:
         continue
-    el = (att_weight, f"{res.resname:3}{res.id[1]}({chain})")
+    pct_of_total_attention = round(fraction_of_total_attention * 100, 3)
+    el = (pct_of_total_attention, f"{res.resname:3}{res.id[1]}({chain})")
     data.append(el)
 
-df = pd.DataFrame(data, columns=["Total attention to", "Residue"])
+df = pd.DataFrame(data, columns=["% of total attention", "Residue"])
+df = df.style.format(
+    {"% of total attention": "{:.3f}"}  # Set 3 decimal places for "% of total attention"
+)
 st.markdown(
     f"The {n_highest_resis} residues (per chain) with the highest attention to them are labeled in the visualization and listed here:"
 )
