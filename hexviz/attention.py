@@ -293,9 +293,9 @@ def get_attention_pairs(
                             residue_attention.get(res - ec_tag_length, 0) + attn_value
                         )
         if not ec_number:
-            attention_into_res = attention[head, layer].sum(dim=0)
+            attention_into_res = attention[layer, head].sum(dim=0)
         else:
-            attention_into_res = attention[head, layer, ec_tag_length:, ec_tag_length:].sum(dim=0)
+            attention_into_res = attention[layer, head, ec_tag_length:, ec_tag_length:].sum(dim=0)
         top_n_values, top_n_indexes = torch.topk(attention_into_res, top_n)
 
         for res, attn_sum in zip(top_n_indexes, top_n_values):
