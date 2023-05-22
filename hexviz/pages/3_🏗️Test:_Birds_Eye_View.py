@@ -96,7 +96,7 @@ attention, tokens = get_attention(
 
 grid_rows = len(layer_sequence)
 grid_cols = len(head_sequence)
-viewer_width = 1300
+viewer_width = 1200
 cell_width = viewer_width / grid_cols
 viewer_height = int(cell_width * grid_rows)
 
