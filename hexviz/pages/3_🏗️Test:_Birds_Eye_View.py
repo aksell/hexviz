@@ -80,13 +80,22 @@ if selected_model.name == ModelType.ZymCTRL:
         )
 
 
+min_attn = st.sidebar.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
+if "show_ligands" not in st.session_state:
+    st.session_state.show_ligands = True
+show_ligands = st.sidebar.checkbox("Show ligands", key="show_ligands")
+
+with st.sidebar.expander("Highlight residues"):
+    st.write("Residue will be highlighted in yellow")
+    hl_resi_list = st.multiselect(label="Selected Residues", options=list(range(1, 5000)))
+    highlight_resi = st.checkbox(label="Highlight residues", value=True)
+    label_resi = st.checkbox(label="Label residue names", value=False)
+layer_sequence, head_sequence = select_heads_and_layers(st.sidebar, selected_model)
+# TODO add slider for widht of grid
+
+
 residues = [res for res in selected_chain.get_residues()]
 sequence = res_to_1letter(residues)
-
-
-layer_sequence, head_sequence = select_heads_and_layers(st.sidebar, selected_model)
-
-min_attn = st.sidebar.slider("Minimum attention", min_value=0.0, max_value=0.4, value=0.1)
 
 attention, tokens = get_attention(
     sequence=sequence,
@@ -107,7 +116,6 @@ xyzview = py3Dmol.view(
     linked=False,
     viewergrid=(grid_rows, grid_cols),
 )
-xyzview.setStyle({"cartoon": {"color": "white"}})
 
 
 for row, layer in enumerate(layer_sequence):
@@ -139,5 +147,23 @@ for row, layer in enumerate(layer_sequence):
                 },
                 viewer=(row, col),
             )
+
+
+xyzview.setStyle({"cartoon": {"color": "white"}})
+if highlight_resi:
+    for res in hl_resi_list:
+        xyzview.setStyle({"resi": res}, {"cartoon": {"color": "yellow"}})
+if label_resi:
+    for hl_resi in hl_resi_list:
+        xyzview.addResLabels(
+            {"resi": hl_resi},
+            {
+                "backgroundColor": "lightgray",
+                "fontColor": "black",
+                "backgroundOpacity": 0.5,
+            },
+        )
+if show_ligands:
+    xyzview.addStyle({"hetflag": True}, {"stick": {"radius": 0.2}})
 
 stmol.showmol(xyzview, height=viewer_height, width=viewer_width)
