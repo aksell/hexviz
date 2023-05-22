@@ -46,6 +46,14 @@ with st.expander("Input a PDB id, upload a PDB file or input a sequence", expand
 selected_model = select_model(models)
 
 
+if "viewer_width" not in st.session_state:
+    st.session_state.viewer_width = 1200
+viewer_width = st.sidebar.number_input(
+    label="Protein viewer width (px)",
+    min_value=0,
+    key="viewer_width",
+)
+
 chains = list(structure.get_chains())
 chain_ids = [chain.id for chain in chains]
 if "selected_chain" not in st.session_state:
@@ -105,7 +113,6 @@ attention, tokens = get_attention(
 
 grid_rows = len(layer_sequence)
 grid_cols = len(head_sequence)
-viewer_width = 1200
 cell_width = viewer_width / grid_cols
 viewer_height = int(cell_width * grid_rows)
 
