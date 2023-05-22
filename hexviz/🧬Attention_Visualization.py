@@ -183,7 +183,7 @@ sorted_by_attention = sorted(attention_pairs, key=lambda x: x[0], reverse=True)
 
 
 def get_3dview(pdb):
-    xyzview = py3Dmol.view()
+    xyzview = py3Dmol.view(height=800, width=800)  # TODO you can set the pixel dims here!
     xyzview.addModel(pdb_str, "pdb")
     xyzview.setStyle({"cartoon": {"color": "spectrum" if color_protein else "white"}})
     stmol.add_hover(xyzview, backgroundColor="black", fontColor="white")
@@ -253,7 +253,7 @@ def get_3dview(pdb):
 
 
 xyzview = get_3dview(pdb_id)
-showmol(xyzview, height=500, width=800)
+showmol(xyzview, height=800, width=800)
 
 st.markdown(
     f"""
