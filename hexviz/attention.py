@@ -1,3 +1,4 @@
+import time
 from io import StringIO
 from urllib import request
 
@@ -34,13 +35,20 @@ def get_pdb_file(pdb_code: str) -> Structure:
 
 
 @st.cache
-def get_pdb_from_seq(sequence: str) -> str:
+def get_pdb_from_seq(sequence: str) -> str | None:
     """
     Get structure from sequence
     """
     url = "https://api.esmatlas.com/foldSequence/v1/pdb/"
-    res = requests.post(url, data=sequence)
-    pdb_str = res.text
+    retries = 0
+    pdb_str = None
+    while retries < 3 and pdb_str is None:
+        response = requests.post(url, data=sequence)
+        pdb_str = response.text
+        if pdb_str == "INTERNAL SERVER ERROR":
+            retries += 1
+            time.sleep(0.1)
+            pdb_str = None
     return pdb_str
 
 
