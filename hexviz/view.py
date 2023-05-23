@@ -81,20 +81,27 @@ def select_protein(pdb_code, uploaded_file, input_sequence):
         pdb_str = uploaded_file.read().decode("utf-8")
         st.session_state["uploaded_pdb_str"] = pdb_str
         source = f"uploaded pdb file {uploaded_file.name}"
+        structure = parser.get_structure("Userfile", StringIO(pdb_str))
     elif input_sequence:
         pdb_str = get_pdb_from_seq(str(input_sequence))
-        if "selected_chains" in st.session_state:
-            del st.session_state.selected_chains
-        source = "Input sequence + ESM-fold"
+        if not pdb_str:
+            st.erros("ESMfold error, unable to fold sequence")
+            return None, None, None
+        else:
+            structure = parser.get_structure("ESMFold", StringIO(pdb_str))
+            if "selected_chains" in st.session_state:
+                del st.session_state.selected_chains
+            source = "Input sequence + ESM-fold"
     elif "uploaded_pdb_str" in st.session_state:
         pdb_str = st.session_state.uploaded_pdb_str
         source = "Uploaded file stored in cache"
+        structure = parser.get_structure("userfile", StringIO(pdb_str))
     else:
         file = get_pdb_file(pdb_code)
         pdb_str = file.read()
         source = f"PDB ID: {pdb_code}"
+        structure = parser.get_structure(pdb_code, StringIO(pdb_str))
 
-    structure = parser.get_structure(pdb_code, StringIO(pdb_str))
     return pdb_str, structure, source
 
 
