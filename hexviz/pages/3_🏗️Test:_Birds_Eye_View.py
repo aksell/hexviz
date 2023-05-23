@@ -119,11 +119,12 @@ viewer_height = int(cell_width * grid_rows)
 xyzview = py3Dmol.view(
     width=viewer_width,
     height=viewer_height,
-    query=f"pdb:{pdb_id}",
     linked=False,
     viewergrid=(grid_rows, grid_cols),
 )
 
+xyzview.addModel(pdb_str, "pdb")
+xyzview.zoomTo()
 
 for row, layer in enumerate(layer_sequence):
     for col, head in enumerate(head_sequence):
