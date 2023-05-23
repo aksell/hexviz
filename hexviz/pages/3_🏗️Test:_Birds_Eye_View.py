@@ -119,7 +119,6 @@ viewer_height = int(cell_width * grid_rows)
 xyzview = py3Dmol.view(
     width=viewer_width,
     height=viewer_height,
-    linked=False,
     viewergrid=(grid_rows, grid_cols),
 )
 
