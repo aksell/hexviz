@@ -154,10 +154,15 @@ if selected_model.name == ModelType.ZymCTRL:
 
             # Normalize the reverse vector
             reverse_vector_normalized = np.array(reverse_vector) / np.linalg.norm(reverse_vector)
-            coordinates = [
-                [res_1[j] + i * 2 * radius * reverse_vector_normalized[j] for j in range(3)]
-                for i in range(4)
-            ]
+            # Reveres coordinates to have the first EC number be furthers from the start of the
+            # protein like it is in the sequence with the EC serial number next to the sequence
+            # and the EC main class at the the very start, further from the sequence.
+            coordinates = reversed(
+                [
+                    [res_1[j] + i * 2 * radius * reverse_vector_normalized[j] for j in range(3)]
+                    for i in range(4)
+                ]
+            )
             EC_tag = [
                 ECNumber(number=num, coordinate=coord, color=color, radius=radius)
                 for num, coord, color in zip(EC_numbers, coordinates, colors)
