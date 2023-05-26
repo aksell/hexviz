@@ -85,7 +85,7 @@ def select_protein(pdb_code, uploaded_file, input_sequence):
     elif input_sequence:
         pdb_str = get_pdb_from_seq(str(input_sequence))
         if not pdb_str:
-            st.erros("ESMfold error, unable to fold sequence")
+            st.error("ESMfold error, unable to fold sequence")
             return None, None, None
         else:
             structure = parser.get_structure("ESMFold", StringIO(pdb_str))
