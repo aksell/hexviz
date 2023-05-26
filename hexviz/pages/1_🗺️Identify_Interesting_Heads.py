@@ -139,5 +139,9 @@ with right:
         unsafe_allow_html=True,
     )
 
+if selected_model.name == ModelType.PROT_T5:
+    # Remove leading underscores from residue tokens
+    tokens = [token[1:] for token in tokens if str(token) != "</s>"]
+
 single_head_fig = plot_single_heatmap(attention, layer, head, tokens=tokens)
 st.pyplot(single_head_fig)
