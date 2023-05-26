@@ -293,7 +293,7 @@ st.markdown(
 <a href="{URL}Identify_Interesting_Heads" target="_self">🗺️Identify Interesting Heads</a> plots attention heatmapt for many heads and
 layers from a model. This can help you pick what specific attention heads to look at for your protein.
 
-<a href="{URL}Birds_Eye_view" target="_self">🦅Birds Eye View</a> visualizes attention on structures in a large grid, see how attention patterns
+<a href="{URL}Birds_Eye_View" target="_self">🦅Birds Eye View</a> visualizes attention on structures in a large grid, see how attention patterns
 change through layers and varies accross several heads.
 
 <a href="{URL}Documentation" target="_self">📄Documentation</a> has information on protein 
