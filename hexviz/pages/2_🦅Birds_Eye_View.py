@@ -20,7 +20,7 @@ from hexviz.view import (
 )
 
 st.set_page_config(layout="wide", menu_items=menu_items)
-st.title("Test: Attention Bird's Eye View")
+st.title("Bird's Eye View of attention heads")
 
 
 for k, v in st.session_state.items():
