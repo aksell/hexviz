@@ -49,13 +49,23 @@ def plot_single_heatmap(
     fig, ax = plt.subplots(figsize=(10, 10))
     heatmap = ax.imshow(single_heatmap, cmap="viridis", aspect="equal", vmin=0, vmax=1)
 
+    # Function to adjust font size based on the number of labels
+    def get_font_size(labels):
+        if len(labels) <= 60:
+            return 8
+        else:
+            return 8 * (60 / len(labels))
+
+    # Adjust font size
+    font_size = get_font_size(tokens)
+
     # Set the x and y axis ticks
     ax.xaxis.set_major_locator(FixedLocator(np.arange(0, len(tokens))))
     ax.yaxis.set_major_locator(FixedLocator(np.arange(0, len(tokens))))
 
     # Set tick labels as sequence values
-    ax.set_xticklabels(tokens, fontsize=8, rotation=45, ha="right", rotation_mode="anchor")
-    ax.set_yticklabels(tokens, fontsize=8)
+    ax.set_xticklabels(tokens, fontsize=font_size, rotation=45, ha="right", rotation_mode="anchor")
+    ax.set_yticklabels(tokens, fontsize=font_size)
 
     # Set the axis labels
     ax.set_xlabel("Sequence tokens")
