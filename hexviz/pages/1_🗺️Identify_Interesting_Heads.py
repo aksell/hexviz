@@ -110,6 +110,11 @@ fig = plot_tiled_heatmap(attention, layer_sequence=layer_sequence, head_sequence
 st.pyplot(fig)
 
 st.subheader("Plot single head")
+
+if selected_model.name == ModelType.PROT_T5:
+    # Remove leading underscores from residue tokens
+    tokens = [token[1:] if str(token) != "</s>" else token for token in tokens]
+
 left, mid, right = st.columns(3)
 with left:
     if "selected_layer" not in st.session_state:
@@ -133,10 +138,6 @@ with right:
     if "label_tokens" not in st.session_state:
         st.session_state.label_tokens = []
     tokens_to_label = st.multiselect("Label tokens", options=tokens, key="label_tokens")
-
-if selected_model.name == ModelType.PROT_T5:
-    # Remove leading underscores from residue tokens
-    tokens = [token[1:] if str(token) != "</s>" else token for token in tokens]
 
 if len(tokens_to_label) > 0:
     tokens = [token if token in tokens_to_label else "" for token in tokens]
