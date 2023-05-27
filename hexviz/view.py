@@ -36,6 +36,8 @@ def clear_model_state():
         del st.session_state.plot_layers
     if "plot_heads" in st.session_state:
         del st.session_state.plot_heads
+    if "label_tokens" in st.session_state:
+        del st.session_state.label_tokens
 
 
 def select_model(models):

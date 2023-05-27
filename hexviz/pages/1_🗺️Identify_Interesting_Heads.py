@@ -130,18 +130,16 @@ with mid:
     )
     head = head_one - 1
 with right:
-    st.markdown(
-        f"""
-          
-
-        ### <a href="{URL}Attention_Visualization" target="_self">🧬View attention from head on structure</a>
-        """,
-        unsafe_allow_html=True,
-    )
+    if "label_tokens" not in st.session_state:
+        st.session_state.label_tokens = []
+    tokens_to_label = st.multiselect("Label tokens", options=tokens, key="label_tokens")
 
 if selected_model.name == ModelType.PROT_T5:
     # Remove leading underscores from residue tokens
     tokens = [token[1:] if str(token) != "</s>" else token for token in tokens]
+
+if len(tokens_to_label) > 0:
+    tokens = [token if token in tokens_to_label else "" for token in tokens]
 
 
 single_head_fig = plot_single_heatmap(attention, layer, head, tokens=tokens)
