@@ -50,9 +50,11 @@ structure. We hope this can enable domain experts to explore and interpret the
 knowledge contained in pLMs.
 
 ## How to use Hexviz
-There are two views:
+There are three views:
 1. <a href="{URL}Attention_Visualization" target="_self">🧬Attention Visualization</a> Shows attention weights from a single head as red bars between residues on a protein structure.
 2. <a href="{URL}Identify_Interesting_Heads" target="_self">🗺️Identify Interesting Heads</a> Plots attention weights between residues as a heatmap for each head in the model.
+3. <a href="{URL}Birds_Eye_View" target="_self">🦅Bird's Eye View</a> Attention on structures in a big grid over multiple heads and layers. The first view on steroids but with the cost of being quite slow for large models or long sequences.
+
 
 The first view is the meat of the application and is where you can investigate
 how attention patterns map onto the structure of a protein you're interested in.
