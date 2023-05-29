@@ -63,12 +63,7 @@ way to identify heads with patterns we're interested in.
 
 The second view is a customizable heatmap plot of attention between residue for
 all heads and layers in a model. From here it is possible to identify heads that
-specialize in a particular attention pattern, such as:
-1. Vertical lines: Paying attention so a single or a few residues
-2. Diagonal: Attention to the same residue or residues in front or behind the current residue.
-3. Block attention: Attention is segmented so parts of the sequence are attended to by one part of the sequence.
-4. Heterogeneous: More complex attention patterns that are not easily categorized.
-TODO: Add examples of attention patterns
+specialize in a particular attention pattern.
 
 Read more about attention patterns in fex [Revealing the dark secrets of
 BERT](https://arxiv.org/abs/1908.08593).
