@@ -83,6 +83,10 @@ Hexviz currently supports the following models:
 ## FAQ
 1. I can't see any attention- "bars" in the visualization, what is wrong? -> Lower the `minimum attention`.
 2. How are sequences I input folded? -> Using https://esmatlas.com/resources?action=fold
+3. Why the name Hexviz? -> It's a discworld reference, Hex is a computer in the unseen universtiy which might be even less interpretable than transformer models:
+> The main structure works through the movements of large numbers of ants through the complex pipes and tubing which make up the main quantity of Hex's infrastructure.
+> Hex "thinks" by controlling which tubes the ants can crawl through, thus allowing it to perform increasingly complex computations if enough ants are provided (that is, if there are enough bugs in the system).
+There's more fun reading, with earie reference to powerful AI models at https://discworld.fandom.com/wiki/Hex
 """,
     unsafe_allow_html=True,
 )
