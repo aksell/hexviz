@@ -85,6 +85,9 @@ truncated_sequence = sequence[slice_start - 1 : slice_end]
 remove_special_tokens = st.sidebar.checkbox(
     "Hide attention to special tokens", key="remove_special_tokens"
 )
+if "fixed_scale" not in st.session_state:
+    st.session_state.fixed_scale = True
+fixed_scale = st.sidebar.checkbox("Fixed scale", help="For long sequences the default fixed 0 to 1 scale can have very low contrast heatmaps, consider using a relative scale to increase the contrast between high attention and low attention areas. Note that each subplot will have separate color scales so don't compare colors between attention heads if using a non-fixed scale.", key="fixed_scale")
 
 
 layer_sequence, head_sequence = select_heads_and_layers(st.sidebar, selected_model)
@@ -104,7 +107,7 @@ attention, tokens = get_attention(
     ec_number=ec_number,
 )
 
-fig = plot_tiled_heatmap(attention, layer_sequence=layer_sequence, head_sequence=head_sequence)
+fig = plot_tiled_heatmap(attention, layer_sequence=layer_sequence, head_sequence=head_sequence, fixed_scale=fixed_scale)
 
 
 st.pyplot(fig)
@@ -143,5 +146,5 @@ if len(tokens_to_label) > 0:
     tokens = [token if token in tokens_to_label else "" for token in tokens]
 
 
-single_head_fig = plot_single_heatmap(attention, layer, head, tokens=tokens)
+single_head_fig = plot_single_heatmap(attention, layer, head, tokens=tokens, fixed_scale=fixed_scale)
 st.pyplot(single_head_fig)

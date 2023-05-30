@@ -6,7 +6,7 @@ from matplotlib.ticker import FixedLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
-def plot_tiled_heatmap(tensor, layer_sequence: List[int], head_sequence: List[int]):
+def plot_tiled_heatmap(tensor, layer_sequence: List[int], head_sequence: List[int], fixed_scale: bool = True):
     tensor = tensor[layer_sequence, :][
         :, head_sequence, :, :
     ]  # Slice the tensor according to the provided sequences and sequence_count
@@ -18,9 +18,14 @@ def plot_tiled_heatmap(tensor, layer_sequence: List[int], head_sequence: List[in
     fig, axes = plt.subplots(num_layers, num_heads, figsize=(x_size, y_size), squeeze=False)
     for i in range(num_layers):
         for j in range(num_heads):
-            axes[i, j].imshow(
-                tensor[i, j].detach().numpy(), cmap="viridis", aspect="equal", vmin=0, vmax=1
-            )
+            if fixed_scale:
+                im = axes[i, j].imshow(
+                    tensor[i, j].detach().numpy(), cmap="viridis", aspect="equal", vmin=0, vmax=1
+                )
+            else:
+                im = axes[i, j].imshow(
+                    tensor[i, j].detach().numpy(), cmap="viridis", aspect="equal"
+                )
             axes[i, j].axis("off")
 
             # Enumerate the axes
@@ -33,7 +38,7 @@ def plot_tiled_heatmap(tensor, layer_sequence: List[int], head_sequence: List[in
         row_label = f"{layer_sequence[i]+1}"
         row_pos = ax_row[num_heads - 1].get_position()
         fig.text(row_pos.x1 + offset, (row_pos.y1 + row_pos.y0) / 2, row_label, va="center")
-
+    
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
     return fig
 
@@ -43,11 +48,15 @@ def plot_single_heatmap(
     layer: int,
     head: int,
     tokens: list[str],
+    fixed_scale : bool = True
 ):
     single_heatmap = tensor[layer, head, :, :].detach().numpy()
 
     fig, ax = plt.subplots(figsize=(10, 10))
-    heatmap = ax.imshow(single_heatmap, cmap="viridis", aspect="equal", vmin=0, vmax=1)
+    if fixed_scale:
+        heatmap = ax.imshow(single_heatmap, cmap="viridis", aspect="equal", vmin=0, vmax=1)
+    else:
+        heatmap = ax.imshow(single_heatmap, cmap="viridis", aspect="equal")
 
     # Function to adjust font size based on the number of labels
     def get_font_size(labels):
