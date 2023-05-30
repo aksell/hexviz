@@ -88,6 +88,8 @@ remove_special_tokens = st.sidebar.checkbox(
 if "fixed_scale" not in st.session_state:
     st.session_state.fixed_scale = True
 fixed_scale = st.sidebar.checkbox("Fixed scale", help="For long sequences the default fixed 0 to 1 scale can have very low contrast heatmaps, consider using a relative scale to increase the contrast between high attention and low attention areas. Note that each subplot will have separate color scales so don't compare colors between attention heads if using a non-fixed scale.", key="fixed_scale")
+if not fixed_scale:
+    st.sidebar.warning("With `Fixed scale` set to False each cell in the grid has a dynamic color scale where the highest attention value in that cell is bright yellow. Colors can not be compared between cells.")
 
 
 layer_sequence, head_sequence = select_heads_and_layers(st.sidebar, selected_model)
