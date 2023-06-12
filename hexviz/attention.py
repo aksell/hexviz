@@ -229,7 +229,7 @@ def unidirectional_avg_filtered(attention, layer, head, threshold):
 # The ideal would be to pass in the structure directly, not parsing
 # Thist twice. If streamlit is upgaded to past 0.17 this can be
 # fixed.
-@st.cache
+@st.cache(show_spinner=False)
 def get_attention_pairs(
     pdb_str: str,
     layer: int,
