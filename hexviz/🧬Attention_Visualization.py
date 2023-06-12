@@ -55,7 +55,7 @@ if "show_ligands" not in st.session_state:
     st.session_state.show_ligands = True
 show_ligands = st.sidebar.checkbox("Show ligands", key="show_ligands")
 if "color_protein" not in st.session_state:
-    st.session_state.color_protein = True
+    st.session_state.color_protein = False
 color_protein = st.sidebar.checkbox("Color protein", key="color_protein")
 
 
